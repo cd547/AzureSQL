@@ -28,20 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title2 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title5 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title6 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title4 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.label3 = new System.Windows.Forms.Label();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -100,6 +106,18 @@
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.dateTimePicker7 = new System.Windows.Forms.DateTimePicker();
+            this.button19 = new System.Windows.Forms.Button();
+            this.dateTimePicker8 = new System.Windows.Forms.DateTimePicker();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.button20 = new System.Windows.Forms.Button();
+            this.label16 = new System.Windows.Forms.Label();
+            this.dateTimePicker9 = new System.Windows.Forms.DateTimePicker();
+            this.chart3 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -119,6 +137,10 @@
             this.splitContainer1.SuspendLayout();
             this.tabControl2.SuspendLayout();
             this.tabPage4.SuspendLayout();
+            this.tabPage5.SuspendLayout();
+            this.panel6.SuspendLayout();
+            this.panel7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart3)).BeginInit();
             this.SuspendLayout();
             // 
             // comboBox1
@@ -139,8 +161,8 @@
             this.dataGridView1.Location = new System.Drawing.Point(6, 87);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidth = 51;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("微软雅黑", 6.6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.dataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("微软雅黑", 6.6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.dataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridView1.RowTemplate.Height = 27;
             this.dataGridView1.Size = new System.Drawing.Size(1146, 381);
             this.dataGridView1.TabIndex = 5;
@@ -161,6 +183,8 @@
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
+            this.toolStripStatusLabel4,
+            this.toolStripStatusLabel3,
             this.toolStripStatusLabel2});
             this.statusStrip1.Location = new System.Drawing.Point(0, 678);
             this.statusStrip1.Name = "statusStrip1";
@@ -171,8 +195,20 @@
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(69, 20);
-            this.toolStripStatusLabel1.Text = "远程状态";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(116, 20);
+            this.toolStripStatusLabel1.Text = "远程状态：NaN";
+            // 
+            // toolStripStatusLabel4
+            // 
+            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
+            this.toolStripStatusLabel4.Size = new System.Drawing.Size(15, 20);
+            this.toolStripStatusLabel4.Text = "/";
+            // 
+            // toolStripStatusLabel3
+            // 
+            this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
+            this.toolStripStatusLabel3.Size = new System.Drawing.Size(116, 20);
+            this.toolStripStatusLabel3.Text = "本地状态：NaN";
             // 
             // toolStripStatusLabel2
             // 
@@ -188,6 +224,7 @@
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Location = new System.Drawing.Point(192, 4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -416,71 +453,71 @@
             this.chart1.BorderSkin.BackColor = System.Drawing.Color.Transparent;
             this.chart1.BorderSkin.BorderColor = System.Drawing.Color.White;
             this.chart1.BorderSkin.PageColor = System.Drawing.Color.Black;
-            chartArea1.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
-            chartArea1.AxisX.IsLabelAutoFit = false;
-            chartArea1.AxisX.LabelStyle.Angle = 90;
-            chartArea1.AxisX.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea1.AxisX.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX.MinorTickMark.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisX.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisX.TitleForeColor = System.Drawing.Color.White;
-            chartArea1.AxisX2.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea1.AxisX2.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisX2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisX2.TitleForeColor = System.Drawing.Color.White;
-            chartArea1.AxisY.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea1.AxisY.LabelStyle.Format = "N3";
-            chartArea1.AxisY.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisY.MajorTickMark.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisY.MinorGrid.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisY.MinorTickMark.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisY.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisY.TitleForeColor = System.Drawing.Color.White;
-            chartArea1.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea1.AxisY2.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisY2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisY2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea1.AxisY2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea1.AxisY2.TitleForeColor = System.Drawing.Color.White;
-            chartArea1.BackColor = System.Drawing.Color.Transparent;
-            chartArea1.CursorX.Interval = 0.001D;
-            chartArea1.CursorX.IsUserEnabled = true;
-            chartArea1.CursorX.IsUserSelectionEnabled = true;
-            chartArea1.CursorY.Interval = 0.0001D;
-            chartArea1.CursorY.IsUserEnabled = true;
-            chartArea1.CursorY.IsUserSelectionEnabled = true;
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            legend1.BackColor = System.Drawing.Color.Transparent;
-            legend1.ForeColor = System.Drawing.Color.White;
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
+            chartArea5.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea5.AxisX.IsLabelAutoFit = false;
+            chartArea5.AxisX.LabelStyle.Angle = 90;
+            chartArea5.AxisX.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea5.AxisX.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.MinorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisX.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisX.TitleForeColor = System.Drawing.Color.White;
+            chartArea5.AxisX2.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea5.AxisX2.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisX2.TitleForeColor = System.Drawing.Color.White;
+            chartArea5.AxisY.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea5.AxisY.LabelStyle.Format = "N3";
+            chartArea5.AxisY.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisY.MajorGrid.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisY.MajorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisY.MinorGrid.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisY.MinorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisY.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisY.TitleForeColor = System.Drawing.Color.White;
+            chartArea5.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea5.AxisY2.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea5.AxisY2.TitleForeColor = System.Drawing.Color.White;
+            chartArea5.BackColor = System.Drawing.Color.Transparent;
+            chartArea5.CursorX.Interval = 0.001D;
+            chartArea5.CursorX.IsUserEnabled = true;
+            chartArea5.CursorX.IsUserSelectionEnabled = true;
+            chartArea5.CursorY.Interval = 0.0001D;
+            chartArea5.CursorY.IsUserEnabled = true;
+            chartArea5.CursorY.IsUserSelectionEnabled = true;
+            chartArea5.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea5);
+            legend5.BackColor = System.Drawing.Color.Transparent;
+            legend5.ForeColor = System.Drawing.Color.White;
+            legend5.Name = "Legend1";
+            this.chart1.Legends.Add(legend5);
             this.chart1.Location = new System.Drawing.Point(207, 2);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-            series1.LabelForeColor = System.Drawing.Color.White;
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            this.chart1.Series.Add(series1);
+            series5.ChartArea = "ChartArea1";
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+            series5.LabelForeColor = System.Drawing.Color.White;
+            series5.Legend = "Legend1";
+            series5.Name = "Series1";
+            this.chart1.Series.Add(series5);
             this.chart1.Size = new System.Drawing.Size(943, 434);
             this.chart1.TabIndex = 14;
             this.chart1.Text = "chart1";
-            title1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Bold);
-            title1.ForeColor = System.Drawing.Color.Snow;
-            title1.Name = "Title1";
-            this.chart1.Titles.Add(title1);
+            title5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Bold);
+            title5.ForeColor = System.Drawing.Color.Snow;
+            title5.Name = "Title1";
+            this.chart1.Titles.Add(title5);
             this.chart1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.chart1_MouseMove);
             // 
             // button4
@@ -609,71 +646,71 @@
             this.chart2.BorderSkin.BackColor = System.Drawing.Color.Transparent;
             this.chart2.BorderSkin.BorderColor = System.Drawing.Color.White;
             this.chart2.BorderSkin.PageColor = System.Drawing.Color.Black;
-            chartArea2.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
-            chartArea2.AxisX.IsLabelAutoFit = false;
-            chartArea2.AxisX.LabelStyle.Angle = 90;
-            chartArea2.AxisX.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea2.AxisX.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.MinorTickMark.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisX.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisX.TitleForeColor = System.Drawing.Color.White;
-            chartArea2.AxisX2.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea2.AxisX2.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisX2.TitleForeColor = System.Drawing.Color.White;
-            chartArea2.AxisY.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea2.AxisY.LabelStyle.Format = "N3";
-            chartArea2.AxisY.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisY.MajorTickMark.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisY.MinorGrid.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisY.MinorTickMark.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisY.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisY.TitleForeColor = System.Drawing.Color.White;
-            chartArea2.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.White;
-            chartArea2.AxisY2.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
-            chartArea2.AxisY2.TitleForeColor = System.Drawing.Color.White;
-            chartArea2.BackColor = System.Drawing.Color.Transparent;
-            chartArea2.CursorX.Interval = 0.001D;
-            chartArea2.CursorX.IsUserEnabled = true;
-            chartArea2.CursorX.IsUserSelectionEnabled = true;
-            chartArea2.CursorY.Interval = 0.0001D;
-            chartArea2.CursorY.IsUserEnabled = true;
-            chartArea2.CursorY.IsUserSelectionEnabled = true;
-            chartArea2.Name = "ChartArea1";
-            this.chart2.ChartAreas.Add(chartArea2);
-            legend2.BackColor = System.Drawing.Color.Transparent;
-            legend2.ForeColor = System.Drawing.Color.White;
-            legend2.Name = "Legend1";
-            this.chart2.Legends.Add(legend2);
+            chartArea6.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea6.AxisX.IsLabelAutoFit = false;
+            chartArea6.AxisX.LabelStyle.Angle = 90;
+            chartArea6.AxisX.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea6.AxisX.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX.MinorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisX.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisX.TitleForeColor = System.Drawing.Color.White;
+            chartArea6.AxisX2.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea6.AxisX2.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisX2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisX2.TitleForeColor = System.Drawing.Color.White;
+            chartArea6.AxisY.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea6.AxisY.LabelStyle.Format = "N3";
+            chartArea6.AxisY.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisY.MajorGrid.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisY.MajorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisY.MinorGrid.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisY.MinorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisY.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisY.TitleForeColor = System.Drawing.Color.White;
+            chartArea6.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea6.AxisY2.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisY2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisY2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea6.AxisY2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea6.AxisY2.TitleForeColor = System.Drawing.Color.White;
+            chartArea6.BackColor = System.Drawing.Color.Transparent;
+            chartArea6.CursorX.Interval = 0.001D;
+            chartArea6.CursorX.IsUserEnabled = true;
+            chartArea6.CursorX.IsUserSelectionEnabled = true;
+            chartArea6.CursorY.Interval = 0.0001D;
+            chartArea6.CursorY.IsUserEnabled = true;
+            chartArea6.CursorY.IsUserSelectionEnabled = true;
+            chartArea6.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea6);
+            legend6.BackColor = System.Drawing.Color.Transparent;
+            legend6.ForeColor = System.Drawing.Color.White;
+            legend6.Name = "Legend1";
+            this.chart2.Legends.Add(legend6);
             this.chart2.Location = new System.Drawing.Point(207, 2);
             this.chart2.Name = "chart2";
             this.chart2.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-            series2.LabelForeColor = System.Drawing.Color.White;
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
-            this.chart2.Series.Add(series2);
+            series6.ChartArea = "ChartArea1";
+            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+            series6.LabelForeColor = System.Drawing.Color.White;
+            series6.Legend = "Legend1";
+            series6.Name = "Series1";
+            this.chart2.Series.Add(series6);
             this.chart2.Size = new System.Drawing.Size(943, 469);
             this.chart2.TabIndex = 15;
             this.chart2.Text = "结构";
-            title2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Bold);
-            title2.ForeColor = System.Drawing.Color.White;
-            title2.Name = "Title1";
-            this.chart2.Titles.Add(title2);
+            title6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Bold);
+            title6.ForeColor = System.Drawing.Color.White;
+            title6.Name = "Title1";
+            this.chart2.Titles.Add(title6);
             this.chart2.MouseMove += new System.Windows.Forms.MouseEventHandler(this.chart2_MouseMove);
             // 
             // label9
@@ -704,7 +741,7 @@
             // button3
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(579, 7);
+            this.button3.Location = new System.Drawing.Point(652, 7);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(47, 23);
             this.button3.TabIndex = 11;
@@ -715,7 +752,7 @@
             // button6
             // 
             this.button6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button6.Location = new System.Drawing.Point(498, 7);
+            this.button6.Location = new System.Drawing.Point(571, 7);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(75, 23);
             this.button6.TabIndex = 13;
@@ -725,7 +762,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(565, 7);
+            this.button1.Location = new System.Drawing.Point(705, 7);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(56, 23);
             this.button1.TabIndex = 16;
@@ -756,7 +793,7 @@
             // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(622, 7);
+            this.button7.Location = new System.Drawing.Point(762, 7);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(53, 23);
             this.button7.TabIndex = 20;
@@ -767,7 +804,7 @@
             // button8
             // 
             this.button8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button8.Location = new System.Drawing.Point(833, 7);
+            this.button8.Location = new System.Drawing.Point(957, 5);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(107, 28);
             this.button8.TabIndex = 21;
@@ -780,7 +817,7 @@
             this.button9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button9.BackColor = System.Drawing.Color.Red;
             this.button9.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.button9.Location = new System.Drawing.Point(703, 7);
+            this.button9.Location = new System.Drawing.Point(827, 5);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(107, 28);
             this.button9.TabIndex = 22;
@@ -844,7 +881,7 @@
             // button15
             // 
             this.button15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button15.Location = new System.Drawing.Point(972, 7);
+            this.button15.Location = new System.Drawing.Point(1088, 5);
             this.button15.Name = "button15";
             this.button15.Size = new System.Drawing.Size(107, 28);
             this.button15.TabIndex = 38;
@@ -928,6 +965,188 @@
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.panel6);
+            this.tabPage5.Controls.Add(this.panel7);
+            this.tabPage5.Controls.Add(this.chart3);
+            this.tabPage5.Location = new System.Drawing.Point(4, 25);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Size = new System.Drawing.Size(1281, 475);
+            this.tabPage5.TabIndex = 3;
+            this.tabPage5.Text = "SOC";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.dateTimePicker7);
+            this.panel6.Controls.Add(this.button19);
+            this.panel6.Controls.Add(this.dateTimePicker8);
+            this.panel6.Controls.Add(this.label8);
+            this.panel6.Controls.Add(this.label15);
+            this.panel6.Location = new System.Drawing.Point(9, 166);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(191, 181);
+            this.panel6.TabIndex = 52;
+            // 
+            // dateTimePicker7
+            // 
+            this.dateTimePicker7.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dateTimePicker7.Location = new System.Drawing.Point(51, 9);
+            this.dateTimePicker7.Name = "dateTimePicker7";
+            this.dateTimePicker7.Size = new System.Drawing.Size(131, 25);
+            this.dateTimePicker7.TabIndex = 44;
+            // 
+            // button19
+            // 
+            this.button19.Location = new System.Drawing.Point(51, 82);
+            this.button19.Name = "button19";
+            this.button19.Size = new System.Drawing.Size(132, 23);
+            this.button19.TabIndex = 43;
+            this.button19.Text = "栈SOC图(a-b)";
+            this.button19.UseVisualStyleBackColor = true;
+            this.button19.Click += new System.EventHandler(this.button19_Click);
+            // 
+            // dateTimePicker8
+            // 
+            this.dateTimePicker8.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dateTimePicker8.Location = new System.Drawing.Point(51, 40);
+            this.dateTimePicker8.Name = "dateTimePicker8";
+            this.dateTimePicker8.Size = new System.Drawing.Size(131, 25);
+            this.dateTimePicker8.TabIndex = 47;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(8, 46);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(22, 15);
+            this.label8.TabIndex = 46;
+            this.label8.Text = "到";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(8, 13);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(22, 15);
+            this.label15.TabIndex = 45;
+            this.label15.Text = "从";
+            // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.button20);
+            this.panel7.Controls.Add(this.label16);
+            this.panel7.Controls.Add(this.dateTimePicker9);
+            this.panel7.Location = new System.Drawing.Point(8, 13);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(192, 136);
+            this.panel7.TabIndex = 51;
+            // 
+            // button20
+            // 
+            this.button20.Location = new System.Drawing.Point(51, 49);
+            this.button20.Name = "button20";
+            this.button20.Size = new System.Drawing.Size(131, 23);
+            this.button20.TabIndex = 40;
+            this.button20.Text = "栈SOC图";
+            this.button20.UseVisualStyleBackColor = true;
+            this.button20.Click += new System.EventHandler(this.button20_Click);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(8, 13);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(37, 15);
+            this.label16.TabIndex = 42;
+            this.label16.Text = "日期";
+            // 
+            // dateTimePicker9
+            // 
+            this.dateTimePicker9.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dateTimePicker9.Location = new System.Drawing.Point(51, 8);
+            this.dateTimePicker9.Name = "dateTimePicker9";
+            this.dateTimePicker9.Size = new System.Drawing.Size(131, 25);
+            this.dateTimePicker9.TabIndex = 41;
+            // 
+            // chart3
+            // 
+            this.chart3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.chart3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(44)))), ((int)(((byte)(44)))));
+            this.chart3.BorderlineColor = System.Drawing.Color.Gainsboro;
+            this.chart3.BorderSkin.BackColor = System.Drawing.Color.Transparent;
+            this.chart3.BorderSkin.BorderColor = System.Drawing.Color.White;
+            this.chart3.BorderSkin.PageColor = System.Drawing.Color.Black;
+            chartArea4.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea4.AxisX.IsLabelAutoFit = false;
+            chartArea4.AxisX.LabelStyle.Angle = 90;
+            chartArea4.AxisX.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea4.AxisX.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX.MinorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisX.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisX.TitleForeColor = System.Drawing.Color.White;
+            chartArea4.AxisX2.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea4.AxisX2.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisX2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisX2.TitleForeColor = System.Drawing.Color.White;
+            chartArea4.AxisY.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea4.AxisY.LabelStyle.Format = "N3";
+            chartArea4.AxisY.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisY.MajorGrid.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisY.MajorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisY.MinorGrid.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisY.MinorTickMark.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisY.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisY.TitleForeColor = System.Drawing.Color.White;
+            chartArea4.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.White;
+            chartArea4.AxisY2.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisY2.MinorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisY2.MinorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea4.AxisY2.ScaleBreakStyle.LineColor = System.Drawing.Color.White;
+            chartArea4.AxisY2.TitleForeColor = System.Drawing.Color.White;
+            chartArea4.BackColor = System.Drawing.Color.Transparent;
+            chartArea4.CursorX.Interval = 0.001D;
+            chartArea4.CursorX.IsUserEnabled = true;
+            chartArea4.CursorX.IsUserSelectionEnabled = true;
+            chartArea4.CursorY.Interval = 0.0001D;
+            chartArea4.CursorY.IsUserEnabled = true;
+            chartArea4.CursorY.IsUserSelectionEnabled = true;
+            chartArea4.Name = "ChartArea1";
+            this.chart3.ChartAreas.Add(chartArea4);
+            legend4.BackColor = System.Drawing.Color.Transparent;
+            legend4.ForeColor = System.Drawing.Color.White;
+            legend4.Name = "Legend1";
+            this.chart3.Legends.Add(legend4);
+            this.chart3.Location = new System.Drawing.Point(207, 3);
+            this.chart3.Name = "chart3";
+            this.chart3.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
+            series4.ChartArea = "ChartArea1";
+            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+            series4.LabelForeColor = System.Drawing.Color.White;
+            series4.Legend = "Legend1";
+            series4.Name = "Series1";
+            this.chart3.Series.Add(series4);
+            this.chart3.Size = new System.Drawing.Size(943, 469);
+            this.chart3.TabIndex = 50;
+            this.chart3.Text = "结构";
+            title4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Bold);
+            title4.ForeColor = System.Drawing.Color.White;
+            title4.Name = "Title1";
+            this.chart3.Titles.Add(title4);
+            this.chart3.MouseMove += new System.Windows.Forms.MouseEventHandler(this.chart3_MouseMove);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -979,6 +1198,12 @@
             this.splitContainer1.ResumeLayout(false);
             this.tabControl2.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
+            this.tabPage5.ResumeLayout(false);
+            this.panel6.ResumeLayout(false);
+            this.panel6.PerformLayout();
+            this.panel7.ResumeLayout(false);
+            this.panel7.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart3)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1048,6 +1273,20 @@
         private System.Windows.Forms.TabControl tabControl2;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.DateTimePicker dateTimePicker7;
+        private System.Windows.Forms.Button button19;
+        private System.Windows.Forms.DateTimePicker dateTimePicker8;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.Button button20;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.DateTimePicker dateTimePicker9;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
     }
 }
 

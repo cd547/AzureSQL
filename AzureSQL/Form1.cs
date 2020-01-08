@@ -63,19 +63,7 @@ namespace AzureSQL
         {
             //string datestring = this.dateTimePicker1.Value.ToShortDateString();
             // MessageBox.Show(datestring);
-            this.treeView1.Nodes.Add("GS200");
-            TreeNode Fnode = this.treeView1.Nodes[0];
-            Font boldFont = new Font(treeView1.Font,FontStyle.Bold);
-            Fnode.NodeFont = boldFont;
-            Fnode.Text = "GS200";
-            for (int i = 1; i <= 12; i++)
-            {
-                Fnode.Nodes.Add("Stack_" + i.ToString());
-                for (int j = 1; j <= 30; j++)
-                {
-                    Fnode.Nodes[i - 1].Nodes.Add("Cell_" + j.ToString());
-                }
-            }
+
             this.toolStripStatusLabel1.Text = "远程数据库连接中...";
             this.button15.Enabled = false;
             Task t1 = Task.Factory.StartNew(()=>connected());
@@ -143,11 +131,29 @@ namespace AzureSQL
                             }
                         }
                         */
+             //初始化节点
+            this.treeView1.Nodes.Add("GS200");
+            TreeNode Fnode = this.treeView1.Nodes[0];
+            Font boldFont = new Font(treeView1.Font, FontStyle.Bold);
+            Fnode.NodeFont = boldFont;
+            Fnode.Text = "GS200";
+            for (int i = 1; i <= 12; i++)
+            {
+                Fnode.Nodes.Add("Stack_" + i.ToString());
+                for (int j = 1; j <= 30; j++)
+                {
+                    Fnode.Nodes[i - 1].Nodes.Add("Cell_" + j.ToString());
+                }
+            }
+
             chart_init(this.chart1);
             chart_init(this.chart2);
+            chart_init(this.chart3);
 
         }
-
+        /// <summary>
+        /// 测试远程连接
+        /// </summary>
         public void connected()
         {
             using (SqlConnection connection = new SqlConnection(connectionStr))
@@ -690,7 +696,7 @@ namespace AzureSQL
             }
             catch (Exception ex)
             {
-                throw (ex);
+                LogError(ex.ToString());
 
             }
 
@@ -717,7 +723,8 @@ namespace AzureSQL
             }
             catch (Exception ex)
             {
-                throw (ex);
+                LogError(ex.ToString());
+                throw(ex);
             }
         }
         #endregion
@@ -1409,7 +1416,7 @@ namespace AzureSQL
                     int n = this.chart1.Series.Count;
                     if (this.label10.Text == "cell")
                     {
-                        
+
                         for (int i = 0; i < n; i++)
                         {
                             this.chart1.Series[i].Enabled = false;
@@ -1421,15 +1428,18 @@ namespace AzureSQL
                             {
                                 this.chart1.Series[i].Enabled = true;
                             }
-                            LogMessage("在电压标签状态下，标志是cell时选中了"+ this.label11.Text + "#堆栈");
+                            LogMessage("在电压标签状态下，标志是cell时选中了" + this.label11.Text + "#堆栈");
                         }
                         else if (this.treeView1.SelectedNode.Level == 2 && (this.treeView1.SelectedNode.Parent.Index + 1).ToString() == this.label11.Text)
                         {
                             this.chart1.Series[this.treeView1.SelectedNode.Index].Enabled = true;
-                            LogMessage("在电压标签状态下，标志是cell时选中了" + this.label11.Text + "#堆栈里的cell"+ (this.treeView1.SelectedNode.Index+1).ToString());
+                            LogMessage("在电压标签状态下，标志是cell时选中了" + this.label11.Text + "#堆栈里的cell" + (this.treeView1.SelectedNode.Index + 1).ToString());
                         }
                         else
-                        { MessageBox.Show("请选择正确堆栈号节点"); }
+                        {
+                            ;
+                            //MessageBox.Show("请选择正确堆栈号节点");
+                        }
                     }
                     else if (this.label10.Text == "stack")
                     {
@@ -1448,7 +1458,7 @@ namespace AzureSQL
                         }
                         else if (this.treeView1.SelectedNode.Level == 1)//stack
                         {
-                          
+
                             //查找选中的index是否和chart1里的Series的线段名一致
                             bool isfind = false;
                             for (int i = 0; i < n; i++)
@@ -1467,7 +1477,7 @@ namespace AzureSQL
                             if (!isfind)
                             {
                                 MessageBox.Show("没有找到堆栈" + (this.treeView1.SelectedNode.Index + 1).ToString() + "数据");
-                               LogWarning("在电压标签状态下，标志是stack时，没有找到" + (this.treeView1.SelectedNode.Index + 1).ToString() + "#堆栈数据");
+                                LogWarning("在电压标签状态下，标志是stack时，没有找到" + (this.treeView1.SelectedNode.Index + 1).ToString() + "#堆栈数据");
                             }
                             else
                             {
@@ -1578,10 +1588,87 @@ namespace AzureSQL
                         }
 
                     }
+
                     else
                     {; }
                 }
             }
+
+            //
+            else if (this.tabControl1.SelectedIndex == 3) //soc
+            {
+                if (this.chart3.Series.Count > 0)
+                {
+                    int n = this.chart3.Series.Count;
+                    for (int i = 0; i < n; i++)
+                    {
+                        this.chart3.Series[i].Enabled = false;
+                    }
+                    if (this.treeView1.SelectedNode.Level == 0)//gs200
+                    {
+                        for (int i = 0; i < n; i++)
+                        {
+                            this.chart3.Series[i].Enabled = true;
+                        }
+                        LogMessage("在SOC标签状态下，选中了" + "整个堆栈");
+                    }
+                    else if (this.treeView1.SelectedNode.Level == 1)//stack
+                    {
+                        //查找选中的index是否和chart3里的Series的线段名一致
+                        bool isfind = false;
+                        for (int i = 0; i < n; i++)
+                        {
+                            //MessageBox.Show("stack" + (this.treeView1.SelectedNode.Index + 1).ToString() +"__"+ this.chart2.Series[i].Name);
+                            //index从0开始，实际是1开始
+                            if ("stack" + (this.treeView1.SelectedNode.Index + 1).ToString() == this.chart3.Series[i].Name)
+                            {
+                                //找到了
+                                this.chart3.Series[this.treeView1.SelectedNode.Index].Enabled = true;
+                                isfind = true;
+                                break;
+                            }
+                        }
+                        if (!isfind)
+                        {
+                            MessageBox.Show("没有找到堆栈" + (this.treeView1.SelectedNode.Index + 1).ToString() + "数据");
+                            LogWarning("在SOC标签状态下没有找到" + (this.treeView1.SelectedNode.Index + 1).ToString() + "#堆栈的数据");
+                        }
+                        else
+                        {
+                            LogMessage("在SOC标签状态下，选中了" + (this.treeView1.SelectedNode.Index + 1).ToString() + "#堆栈");
+                        }
+
+                    }
+                    else if (this.treeView1.SelectedNode.Level == 2)//cell
+                    {
+                        //查找选中的index是否和chart1里的Series的线段名一致
+                        bool isfind = false;
+                        for (int i = 0; i < n; i++)
+                        {
+                            // MessageBox.Show("stack" + (this.treeView1.SelectedNode.Index + 1).ToString() +"__"+ this.chart1.Series[i].Name);
+                            //index从0开始，实际是1开始
+                            if ("stack" + (this.treeView1.SelectedNode.Parent.Index + 1).ToString() == this.chart3.Series[i].Name)
+                            {
+                                //找到了
+                                this.chart3.Series[this.treeView1.SelectedNode.Parent.Index].Enabled = true;
+                                isfind = true;
+                                break;
+                            }
+                        }
+                        if (!isfind)
+                        {
+                            MessageBox.Show("没有找到堆栈" + (this.treeView1.SelectedNode.Parent.Index + 1).ToString() + "数据");
+                            LogWarning("在SOC标签状态下没有找到" + (this.treeView1.SelectedNode.Parent.Index + 1).ToString() + "#堆栈的数据");
+                        }
+                        else
+                        {
+                            LogMessage("在SOC标签状态下，选中了" + (this.treeView1.SelectedNode.Parent.Index + 1).ToString() + "#堆栈");
+                        }
+                    }
+                }
+            }
+                    //
+
         }
 
         private void treeView1_Leave(object sender, EventArgs e)
@@ -1745,5 +1832,155 @@ namespace AzureSQL
         }
         #endregion
 
+        public void drawLine_SOC(int n, string linename, List<DateTime> x, List<double> y)
+        {
+
+            LogMessage("在chart3系列" + n.ToString() + ",绘制曲线" + linename);
+            //this.chart2.Series.Clear();
+            // this.chart2.Series[0].Points.Clear();
+            this.chart3.Series.Add(new Series(linename)); //添加一个图表序列
+                                                          // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
+            this.chart3.Series[n].XValueType = ChartValueType.DateTime;
+            this.chart3.Series[n].Label = "#VAL"; //设置显示X Y的值 
+            this.chart3.Series[n].ToolTip = linename + "\r#VALX\r#VAL"; //鼠标移动到对应点显示数值
+            this.chart3.Series[n].ChartArea = this.chart3.ChartAreas[0].Name; //设置图表背景框ChartArea 
+
+            //开启小箭头及数据显示
+
+            this.chart3.Series[n].IsValueShownAsLabel = false;
+            this.chart3.Series[n].SmartLabelStyle.Enabled = false;
+            this.chart3.Series[n].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.No;
+
+            this.chart3.Series[n].LabelForeColor = Color.Transparent;
+            if (this.checkBox1.Checked)
+            {
+                this.chart3.Series[n].MarkerBorderColor = Color.Red; //标记点边框颜色
+                this.chart3.Series[n].MarkerBorderWidth = 1; //标记点边框大小
+                this.chart3.Series[n].MarkerColor = Color.Blue; //标记点中心颜色
+                this.chart3.Series[n].MarkerSize = 3; //标记点大小
+                this.chart3.Series[n].MarkerStyle = MarkerStyle.Circle; //标记点类型
+
+                this.chart3.Series[n].IsValueShownAsLabel = true;
+                this.chart3.Series[n].SmartLabelStyle.Enabled = true;
+                this.chart3.Series[n].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Partial;
+
+                this.chart3.Series[n].LabelForeColor = Color.Black;
+            }
+
+
+            this.chart3.Series[n].ChartType = SeriesChartType.FastLine; //图类型(折线)
+            this.chart3.Series[n].BorderWidth = 2;
+            this.chart3.Series[n].Points.DataBindXY(x, y); //添加数据
+        }
+
+        //soc
+        private void button20_Click(object sender, EventArgs e)
+        {
+            this.chart3.Series.Clear();
+            foreach (var series in chart3.Series)
+            {
+                series.Points.Clear();
+            }
+
+            if (this.tabControl1.SelectedIndex != 3)
+            {
+                this.tabControl1.SelectTab(3);
+            }
+            chart3.ChartAreas[0].AxisX.Title = "时 间";
+            chart3.ChartAreas[0].AxisY.Title = "S O C";
+
+            // MessageBox.Show(dt.TableName+"_"+n.ToString());
+            this.chart3.Titles[0].Text = "堆栈" + this.dateTimePicker9.Value.ToString("yyyy-MM-dd") + " SOC曲线";
+            for (int stack_id = 1; stack_id <= 12; stack_id++)
+            {
+                string querysql = "SELECT * FROM [dbo].[StackValues] where datediff(day, [Timestamp],'" + this.dateTimePicker9.Value.ToString("yyyy-MM-dd") + "')= 0  AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                //MessageBox.Show(querysql);
+                DataTable dt = DataQueryTable(0, querysql);
+                if (dt != null)
+                {
+                    int n = dt.Rows.Count;
+                    if (n <= 0)
+                    {
+                        MessageBox.Show("stack" + stack_id.ToString() + "没有数据");
+                        //this.chart1.Titles[0].Text = "";
+                        //return;
+                        LogMessage("按钮<栈SOC图> 没有查到数据。SQL：" + querysql);
+                    }
+                    LogMessage("按钮<栈SOC图> SQL：" + querysql);
+                    List<DateTime> x = new List<DateTime>(); List<double> y = new List<double>();
+                    for (int i = 0; i < n; i++)
+                    {
+                        //add time
+                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        //  txt += dt.Rows[i][1].ToString();
+                        //add value
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][10].ToString()), 3));
+
+                    }
+                    drawLine_SOC(stack_id - 1, "stack" + stack_id.ToString(), x, y);
+                }
+                else { break; }
+            }
+        }
+
+        private void chart3_MouseMove(object sender, MouseEventArgs e)
+        {
+            int _currentPointX = e.X;
+            int _currentPointY = e.Y;
+
+            this.chart3.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+            this.chart3.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+            //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
+        }
+
+        //soc a-b
+        private void button19_Click(object sender, EventArgs e)
+        {
+            this.chart3.Series.Clear();
+            foreach (var series in chart3.Series)
+            {
+                series.Points.Clear();
+            }
+
+            if (this.tabControl1.SelectedIndex != 3)
+            {
+                this.tabControl1.SelectTab(3);
+            }
+            chart3.ChartAreas[0].AxisX.Title = "时 间";
+            chart3.ChartAreas[0].AxisY.Title = "S O C";
+
+            // MessageBox.Show(dt.TableName+"_"+n.ToString());
+            this.chart3.Titles[0].Text = "堆栈" + this.dateTimePicker7.Value.ToString("yyyy-MM-dd") + "到" + this.dateTimePicker8.Value.ToString("yyyy-MM-dd") + " SOC曲线";
+            for (int stack_id = 1; stack_id <= 12; stack_id++)
+            {
+                string querysql = "SELECT * FROM [dbo].[StackValues] where ([Timestamp] between '" + this.dateTimePicker7.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker8.Value.ToString("yyyy-MM-dd") + "')  AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                //MessageBox.Show(querysql);
+                DataTable dt = DataQueryTable(0, querysql);
+                if (dt != null)
+                {
+                    int n = dt.Rows.Count;
+                    if (n <= 0)
+                    {
+                        MessageBox.Show("stack" + stack_id.ToString() + "没有数据");
+                        //this.chart1.Titles[0].Text = "";
+                        //return;
+                        LogMessage("按钮<栈SOC图（a-b）> 没有查到数据。SQL：" + querysql);
+                    }
+                    List<DateTime> x = new List<DateTime>(); List<double> y = new List<double>();
+                    LogMessage("按钮<栈SOC图（a-b）> SQL：" + querysql);
+                    for (int i = 0; i < n; i++)
+                    {
+                        //add time
+                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        //  txt += dt.Rows[i][1].ToString();
+                        //add value
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][10].ToString()), 3));
+
+                    }
+                    drawLine_SOC(stack_id - 1, "stack" + stack_id.ToString(), x, y);
+                }
+                else { break; }
+            }
+        }
     }
 }
