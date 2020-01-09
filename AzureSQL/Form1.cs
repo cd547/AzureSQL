@@ -309,45 +309,6 @@ namespace AzureSQL
         //this.label3.Text= Deserialize(this.dataGridView1.Rows[dataGridView1.CurrentRow.Index].Cells[9].Value.ToString());
         // }
 
-        private void Button2_Click(object sender, EventArgs e)
-        {
-            this.chart1.Series.Clear();
-            // this.chart1.Series[0].Points.Clear();
-            this.chart1.Series.Add(new Series("d")); //添加一个图表序列
-                                                     // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
-            this.chart1.Series[0].Label = "#VAL"; //设置显示X Y的值 
-            this.chart1.Series[0].ToolTip = "#VALX\r#VAL"; //鼠标移动到对应点显示数值
-            this.chart1.Series[0].ChartArea = this.chart1.ChartAreas[0].Name; //设置图表背景框ChartArea 
-
-
-
-            //开启小箭头及数据显示
-            this.chart1.Series[0].IsValueShownAsLabel = false;
-            this.chart1.Series[0].SmartLabelStyle.Enabled = false;
-            this.chart1.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.No;
-
-            this.chart1.Series[0].LabelForeColor = Color.Transparent;
-            if (this.checkBox1.Checked)
-            {
-                this.chart1.Series[0].MarkerBorderColor = Color.Red; //标记点边框颜色
-                this.chart1.Series[0].MarkerBorderWidth = 1; //标记点边框大小
-                this.chart1.Series[0].MarkerColor = Color.Blue; //标记点中心颜色
-                this.chart1.Series[0].MarkerSize = 3; //标记点大小
-                this.chart1.Series[0].MarkerStyle = MarkerStyle.Circle; //标记点类型
-
-                this.chart1.Series[0].IsValueShownAsLabel = true;
-                this.chart1.Series[0].SmartLabelStyle.Enabled = true;
-                this.chart1.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Partial;
-
-                this.chart1.Series[0].LabelForeColor = Color.Black;
-            }
-
-
-            this.chart1.Series[0].ChartType = SeriesChartType.Line; //图类型(折线)
-            this.chart1.Series[0].BorderWidth = 2;
-            this.chart1.Series[0].Points.DataBindXY(txData2, tyData2); //添加数据
-        }
-
         private void DataGridView1_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
             ;
@@ -1048,7 +1009,7 @@ namespace AzureSQL
             //即可得到sArray[0]="GT123",sArray[1]="1";
             this.label10.Text = "cell";
             this.label11.Text = Stack_Id_num[1];
-            string querysql = "SELECT * FROM [dbo].[StackValues] where Stack_Id=" + Stack_Id_num[1] + " AND  ([Timestamp] between '" + this.dateTimePicker2.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker3.Value.ToString("yyyy-MM-dd") + "') order by [Timestamp] ASC";
+            string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),CellVoltages_Cell1,CellVoltages_Cell2,CellVoltages_Cell3,CellVoltages_Cell4,CellVoltages_Cell5,CellVoltages_Cell6,CellVoltages_Cell7,CellVoltages_Cell8,CellVoltages_Cell9,CellVoltages_Cell10,CellVoltages_Cell11,CellVoltages_Cell12,CellVoltages_Cell13,CellVoltages_Cell14,CellVoltages_Cell15,CellVoltages_Cell16,CellVoltages_Cell17,CellVoltages_Cell18,CellVoltages_Cell19,CellVoltages_Cell20,CellVoltages_Cell21,CellVoltages_Cell22,CellVoltages_Cell23,CellVoltages_Cell24,CellVoltages_Cell25,CellVoltages_Cell26,CellVoltages_Cell27,CellVoltages_Cell28,CellVoltages_Cell29,CellVoltages_Cell30 FROM [dbo].[StackValues] where Stack_Id=" + Stack_Id_num[1] + " AND  (DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) between '" + this.dateTimePicker2.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker3.Value.ToString("yyyy-MM-dd") + "') order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
             //MessageBox.Show(querysql);
             DataTable dt = DataQueryTable(0, querysql);
             if (dt != null)
@@ -1070,10 +1031,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][17 + cellnum].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1 + cellnum].ToString()), 3));
 
                     }
                     drawLine_volt(cellnum, "Cell" + (cellnum + 1).ToString(), x, y);
@@ -1093,7 +1054,7 @@ namespace AzureSQL
                                                           // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
             this.chart1.Series[n].XValueType = ChartValueType.DateTime;
             this.chart1.Series[n].Label = "#VAL"; //设置显示X Y的值 
-            this.chart1.Series[n].ToolTip = linename + "\r#VALX\r#VAL"; //鼠标移动到对应点显示数值
+            this.chart1.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm} \r#VAL"; //鼠标移动到对应点显示数值
             this.chart1.Series[n].ChartArea = this.chart1.ChartAreas[0].Name; //设置图表背景框ChartArea 
 
 
@@ -1148,7 +1109,7 @@ namespace AzureSQL
             this.label11.Text = Stack_Id_num[1];
             this.label10.Text = "cell";
             //即可得到sArray[0]="GT123",sArray[1]="1";
-            string querysql = "SELECT * FROM [dbo].[StackValues] where Stack_Id=" + Stack_Id_num[1] + " AND  datediff(day, [Timestamp],'" + this.dateTimePicker1.Value.ToString("yyyy-MM-dd") + "')= 0 order by [Timestamp] ASC";
+            string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),CellVoltages_Cell1,CellVoltages_Cell2,CellVoltages_Cell3,CellVoltages_Cell4,CellVoltages_Cell5,CellVoltages_Cell6,CellVoltages_Cell7,CellVoltages_Cell8,CellVoltages_Cell9,CellVoltages_Cell10,CellVoltages_Cell11,CellVoltages_Cell12,CellVoltages_Cell13,CellVoltages_Cell14,CellVoltages_Cell15,CellVoltages_Cell16,CellVoltages_Cell17,CellVoltages_Cell18,CellVoltages_Cell19,CellVoltages_Cell20,CellVoltages_Cell21,CellVoltages_Cell22,CellVoltages_Cell23,CellVoltages_Cell24,CellVoltages_Cell25,CellVoltages_Cell26,CellVoltages_Cell27,CellVoltages_Cell28,CellVoltages_Cell29,CellVoltages_Cell30 FROM [dbo].[StackValues] where Stack_Id=" + Stack_Id_num[1] + " AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker1.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
             // MessageBox.Show(querysql);
             DataTable dt = DataQueryTable(0, querysql);
             if (dt != null)
@@ -1170,10 +1131,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][17 + cellnum].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1 + cellnum].ToString()), 3));
 
                     }
 
@@ -1252,7 +1213,7 @@ namespace AzureSQL
                                                           // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
             this.chart2.Series[n].XValueType = ChartValueType.DateTime;
             this.chart2.Series[n].Label = "#VAL"; //设置显示X Y的值 
-            this.chart2.Series[n].ToolTip = linename + "\r#VALX\r#VAL"; //鼠标移动到对应点显示数值
+            this.chart2.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm}\r#VAL"; //鼠标移动到对应点显示数值
             this.chart2.Series[n].ChartArea = this.chart2.ChartAreas[0].Name; //设置图表背景框ChartArea 
 
 
@@ -1296,7 +1257,7 @@ namespace AzureSQL
 
         }
 
-        private void button2_Click_1(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
 
             this.chart1.Series.Clear();
@@ -1314,7 +1275,7 @@ namespace AzureSQL
             this.label10.Text = "stack";
             for (int stack_id = 1; stack_id <= 12; stack_id++)
             {
-                string querysql = "SELECT * FROM [dbo].[StackValues] where datediff(day, [Timestamp],'" + this.dateTimePicker1.Value.ToString("yyyy-MM-dd") + "')= 0  AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),Voltage FROM [dbo].[StackValues] where datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker1.Value.ToString("yyyy-MM-dd") + "')= 0  AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
                 //MessageBox.Show(querysql);
                 DataTable dt = DataQueryTable(0, querysql);
                 if (dt != null)
@@ -1332,10 +1293,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][6].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1].ToString()), 3));
 
                     }
                     drawLine_volt(stack_id - 1, "stack" + stack_id.ToString(), x, y);
@@ -1364,7 +1325,7 @@ namespace AzureSQL
             for (int stack_id = 1; stack_id <= 12; stack_id++)
             {
 
-                string querysql = "SELECT * FROM [dbo].[StackValues] where ([Timestamp] between '" + this.dateTimePicker2.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker3.Value.ToString("yyyy-MM-dd") + "') AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),Voltage FROM [dbo].[StackValues] where (DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) between '" + this.dateTimePicker2.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker3.Value.ToString("yyyy-MM-dd") + "') AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
                 //MessageBox.Show(querysql);
                 DataTable dt = DataQueryTable(0, querysql);
                 if (dt != null)
@@ -1382,10 +1343,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][6].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1].ToString()), 3));
 
                     }
                     drawLine_volt(stack_id - 1, "stack" + stack_id.ToString(), x, y);
@@ -1708,7 +1669,7 @@ namespace AzureSQL
             this.chart2.Titles[0].Text = "堆栈" + this.dateTimePicker4.Value.ToString("yyyy-MM-dd") + " 温度曲线";
             for (int stack_id = 1; stack_id <= 12; stack_id++)
             {
-                string querysql = "SELECT * FROM [dbo].[StackValues] where datediff(day, [Timestamp],'" + this.dateTimePicker4.Value.ToString("yyyy-MM-dd") + "')= 0  AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),Temperature FROM [dbo].[StackValues] where datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker4.Value.ToString("yyyy-MM-dd") + "')= 0  AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
                 //MessageBox.Show(querysql);
                 DataTable dt = DataQueryTable(0, querysql);
                 if (dt != null)
@@ -1726,10 +1687,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][66].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1].ToString()), 3));
 
                     }
                     drawLine_temp(stack_id - 1, "stack" + stack_id.ToString(), x, y);
@@ -1757,7 +1718,7 @@ namespace AzureSQL
             this.chart2.Titles[0].Text = "堆栈" + this.dateTimePicker6.Value.ToString("yyyy-MM-dd") + "到" + this.dateTimePicker5.Value.ToString("yyyy-MM-dd") + " 温度曲线";
             for (int stack_id = 1; stack_id <= 12; stack_id++)
             {
-                string querysql = "SELECT * FROM [dbo].[StackValues] where ([Timestamp] between '" + this.dateTimePicker6.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker5.Value.ToString("yyyy-MM-dd") + "')  AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp)，Temperature FROM [dbo].[StackValues] where (DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) between '" + this.dateTimePicker6.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker5.Value.ToString("yyyy-MM-dd") + "')  AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
                 //MessageBox.Show(querysql);
                 DataTable dt = DataQueryTable(0, querysql);
                 if (dt != null)
@@ -1775,10 +1736,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][66].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1].ToString()), 3));
 
                     }
                     drawLine_temp(stack_id - 1, "stack" + stack_id.ToString(), x, y);
@@ -1842,7 +1803,7 @@ namespace AzureSQL
                                                           // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
             this.chart3.Series[n].XValueType = ChartValueType.DateTime;
             this.chart3.Series[n].Label = "#VAL"; //设置显示X Y的值 
-            this.chart3.Series[n].ToolTip = linename + "\r#VALX\r#VAL"; //鼠标移动到对应点显示数值
+            this.chart3.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm}\r#VAL"; //鼠标移动到对应点显示数值
             this.chart3.Series[n].ChartArea = this.chart3.ChartAreas[0].Name; //设置图表背景框ChartArea 
 
             //开启小箭头及数据显示
@@ -1887,13 +1848,13 @@ namespace AzureSQL
                 this.tabControl1.SelectTab(3);
             }
             chart3.ChartAreas[0].AxisX.Title = "时 间";
-            chart3.ChartAreas[0].AxisY.Title = "S O C";
+            chart3.ChartAreas[0].AxisY.Title = "S O C %";
 
             // MessageBox.Show(dt.TableName+"_"+n.ToString());
             this.chart3.Titles[0].Text = "堆栈" + this.dateTimePicker9.Value.ToString("yyyy-MM-dd") + " SOC曲线";
             for (int stack_id = 1; stack_id <= 12; stack_id++)
             {
-                string querysql = "SELECT * FROM [dbo].[StackValues] where datediff(day, [Timestamp],'" + this.dateTimePicker9.Value.ToString("yyyy-MM-dd") + "')= 0  AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),StateOfCharge FROM [dbo].[StackValues] where datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker9.Value.ToString("yyyy-MM-dd") + "')= 0  AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
                 //MessageBox.Show(querysql);
                 DataTable dt = DataQueryTable(0, querysql);
                 if (dt != null)
@@ -1911,10 +1872,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][10].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1].ToString()), 3));
 
                     }
                     drawLine_SOC(stack_id - 1, "stack" + stack_id.ToString(), x, y);
@@ -1947,13 +1908,13 @@ namespace AzureSQL
                 this.tabControl1.SelectTab(3);
             }
             chart3.ChartAreas[0].AxisX.Title = "时 间";
-            chart3.ChartAreas[0].AxisY.Title = "S O C";
+            chart3.ChartAreas[0].AxisY.Title = "S O C %";
 
             // MessageBox.Show(dt.TableName+"_"+n.ToString());
             this.chart3.Titles[0].Text = "堆栈" + this.dateTimePicker7.Value.ToString("yyyy-MM-dd") + "到" + this.dateTimePicker8.Value.ToString("yyyy-MM-dd") + " SOC曲线";
             for (int stack_id = 1; stack_id <= 12; stack_id++)
             {
-                string querysql = "SELECT * FROM [dbo].[StackValues] where ([Timestamp] between '" + this.dateTimePicker7.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker8.Value.ToString("yyyy-MM-dd") + "')  AND Stack_Id=" + stack_id + " order by [Timestamp] ASC";
+                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),StateOfCharge FROM [dbo].[StackValues] where (DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) between '" + this.dateTimePicker7.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker8.Value.ToString("yyyy-MM-dd") + "')  AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
                 //MessageBox.Show(querysql);
                 DataTable dt = DataQueryTable(0, querysql);
                 if (dt != null)
@@ -1971,10 +1932,10 @@ namespace AzureSQL
                     for (int i = 0; i < n; i++)
                     {
                         //add time
-                        x.Add(Convert.ToDateTime(dt.Rows[i][1]));
+                        x.Add(Convert.ToDateTime(dt.Rows[i][0]));
                         //  txt += dt.Rows[i][1].ToString();
                         //add value
-                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][10].ToString()), 3));
+                        y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][1].ToString()), 3));
 
                     }
                     drawLine_SOC(stack_id - 1, "stack" + stack_id.ToString(), x, y);
