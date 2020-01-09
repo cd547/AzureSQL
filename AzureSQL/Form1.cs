@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace AzureSQL
 {
@@ -47,6 +48,8 @@ namespace AzureSQL
             chart.ChartAreas[0].Axes[0].MajorTickMark.Enabled = true;
             chart.ChartAreas[0].AxisX.MajorGrid.Interval = 0; //
             chart.ChartAreas[0].AxisX.LabelStyle.Format = "yyyy-MM-dd HH:mm";
+           // chart.ChartAreas[0].AxisX.LabelStyle.IntervalType = DateTimeIntervalType.Minutes;
+           // chart.ChartAreas[0].AxisX.MajorGrid.IntervalType = DateTimeIntervalType.Minutes;
 
 
             chart.ChartAreas[0].Axes[1].MajorGrid.LineDashStyle = ChartDashStyle.Dash; //网格类型 短横线
@@ -63,7 +66,7 @@ namespace AzureSQL
         {
             //string datestring = this.dateTimePicker1.Value.ToShortDateString();
             // MessageBox.Show(datestring);
-
+            LogMessage("打开软件");
             this.toolStripStatusLabel1.Text = "远程数据库连接中...";
             this.button15.Enabled = false;
             Task t1 = Task.Factory.StartNew(()=>connected());
@@ -917,17 +920,20 @@ namespace AzureSQL
         {
             DataTable res;
             string conn = null,localstr="";
+            ToolStripStatusLabel toolstripstatuslabel=null;
             if (localorRemote == 0)
             {
                 //本地
                 conn = connectionLocalStr;
                 localstr = "本地数据库";
+                toolstripstatuslabel = toolStripStatusLabel3;
             }
             else
             {
                 //远程
                 conn = connectionStr;
                 localstr = "远程数据库";
+                toolstripstatuslabel = toolStripStatusLabel1;
             }
             using (SqlConnection connection = new SqlConnection(conn))
             {
@@ -936,8 +942,8 @@ namespace AzureSQL
                     connection.Open();
                     if (connection.State == ConnectionState.Open)
                     {
-                        this.toolStripStatusLabel1.Text = localstr+"连接成功！";
-                        this.toolStripStatusLabel1.ForeColor = Color.Green;
+                        toolstripstatuslabel.Text = localstr+"连接成功！";
+                        toolstripstatuslabel.ForeColor = Color.Green;
 
 
                         string strCommand = sql;
@@ -959,8 +965,8 @@ namespace AzureSQL
                     }
                     else
                     {
-                        this.toolStripStatusLabel1.Text = localstr+"未连接！" + connection.State.ToString();
-                        this.toolStripStatusLabel1.ForeColor = Color.Red;
+                        toolstripstatuslabel.Text = localstr+"未连接！" + connection.State.ToString();
+                        toolstripstatuslabel.ForeColor = Color.Red;
                         LogWarning(localstr + "未连接！" + connection.State.ToString());
                         return null;
                     }
@@ -978,8 +984,8 @@ namespace AzureSQL
                     }
                     MessageBox.Show(errorMessages.ToString());
 
-                    this.toolStripStatusLabel1.Text = localstr+"连接失败！";
-                    this.toolStripStatusLabel1.ForeColor = Color.Red;
+                    toolstripstatuslabel.Text = localstr+"连接失败！";
+                    toolstripstatuslabel.ForeColor = Color.Red;
                     LogError(localstr+"连接失败！" + errorMessages.ToString());
                     return null;
                 }
@@ -997,7 +1003,7 @@ namespace AzureSQL
                 series.Points.Clear();
             }
             chart1.ChartAreas[0].AxisX.Title = "时 间";
-            chart1.ChartAreas[0].AxisY.Title = "电 压";
+            chart1.ChartAreas[0].AxisY.Title = "电 压 V";
             if (this.treeView1.SelectedNode.Level != 1)
             { MessageBox.Show("请选择具体堆栈ID"); return; }
             if (this.tabControl1.SelectedIndex != 1)
@@ -1039,6 +1045,20 @@ namespace AzureSQL
                     }
                     drawLine_volt(cellnum, "Cell" + (cellnum + 1).ToString(), x, y);
                 }
+                if (System.IO.File.Exists("log"))
+                {
+                    this.Invoke(new Action(() => {
+                        genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                    }));
+                }
+                else
+                {
+                    //不存在文件
+                    Directory.CreateDirectory("log");//创建该文件
+                    this.Invoke(new Action(() => {
+                        genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                    }));
+                }
             }
            
 
@@ -1054,7 +1074,7 @@ namespace AzureSQL
                                                           // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
             this.chart1.Series[n].XValueType = ChartValueType.DateTime;
             this.chart1.Series[n].Label = "#VAL"; //设置显示X Y的值 
-            this.chart1.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm} \r#VAL"; //鼠标移动到对应点显示数值
+            this.chart1.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm} \r#VALV"; //鼠标移动到对应点显示数值
             this.chart1.Series[n].ChartArea = this.chart1.ChartAreas[0].Name; //设置图表背景框ChartArea 
 
 
@@ -1085,6 +1105,7 @@ namespace AzureSQL
             this.chart1.Series[n].ChartType = SeriesChartType.FastLine; //图类型(折线)
             this.chart1.Series[n].BorderWidth = 2;
             this.chart1.Series[n].Points.DataBindXY(x, y); //添加数据
+           
         }
 
         private void button14_Click(object sender, EventArgs e)
@@ -1103,7 +1124,7 @@ namespace AzureSQL
                 this.tabControl1.SelectTab(1);
             }
             chart1.ChartAreas[0].AxisX.Title = "时 间";
-            chart1.ChartAreas[0].AxisY.Title = "电 压";
+            chart1.ChartAreas[0].AxisY.Title = "电 压 V";
             string Stack_Id = this.treeView1.SelectedNode.Text;
             string[] Stack_Id_num = Stack_Id.Split('_');
             this.label11.Text = Stack_Id_num[1];
@@ -1140,6 +1161,22 @@ namespace AzureSQL
 
                     drawLine_volt(cellnum, "Cell" + (cellnum + 1).ToString(), x, y);
                 }
+                if (System.IO.File.Exists("log"))
+                {
+                    this.Invoke(new Action(() => {
+                        genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                    }));
+                }
+                else
+                {
+                    //不存在文件
+                    Directory.CreateDirectory("log");//创建该文件
+                    this.Invoke(new Action(() => {
+                        genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                    }));
+                }
+               
+
             }
 
         }
@@ -1213,7 +1250,7 @@ namespace AzureSQL
                                                           // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
             this.chart2.Series[n].XValueType = ChartValueType.DateTime;
             this.chart2.Series[n].Label = "#VAL"; //设置显示X Y的值 
-            this.chart2.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm}\r#VAL"; //鼠标移动到对应点显示数值
+            this.chart2.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm}\r#VAL℃"; //鼠标移动到对应点显示数值
             this.chart2.Series[n].ChartArea = this.chart2.ChartAreas[0].Name; //设置图表背景框ChartArea 
 
 
@@ -1270,7 +1307,7 @@ namespace AzureSQL
                 this.tabControl1.SelectTab(1);
             }
             chart1.ChartAreas[0].AxisX.Title = "时 间";
-            chart1.ChartAreas[0].AxisY.Title = "电 压";
+            chart1.ChartAreas[0].AxisY.Title = "电 压 V";
             this.chart1.Titles[0].Text = "堆栈" + this.dateTimePicker1.Value.ToString("yyyy-MM-dd") + " 电压曲线";
             this.label10.Text = "stack";
             for (int stack_id = 1; stack_id <= 12; stack_id++)
@@ -1304,6 +1341,20 @@ namespace AzureSQL
                 else { break; }
                
             }
+            if (System.IO.File.Exists("log"))
+            {
+                this.Invoke(new Action(() => {
+                    genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                }));
+            }
+            else
+            {
+                //不存在文件
+                Directory.CreateDirectory("log");//创建该文件
+                this.Invoke(new Action(() => {
+                    genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                }));
+            }
         }
 
         private void button18_Click(object sender, EventArgs e)
@@ -1318,7 +1369,7 @@ namespace AzureSQL
                 this.tabControl1.SelectTab(1);
             }
             chart1.ChartAreas[0].AxisX.Title = "时 间";
-            chart1.ChartAreas[0].AxisY.Title = "电 压";
+            chart1.ChartAreas[0].AxisY.Title = "电 压 V";
 
             this.chart1.Titles[0].Text = "堆栈" + this.dateTimePicker2.Value.ToString("yyyy-MM-dd") + "到" + this.dateTimePicker3.Value.ToString("yyyy-MM-dd") + " 电压曲线";
             this.label10.Text = "stack";
@@ -1352,6 +1403,20 @@ namespace AzureSQL
                     drawLine_volt(stack_id - 1, "stack" + stack_id.ToString(), x, y);
                 }
                 else { break; }
+            }
+            if (System.IO.File.Exists("log"))
+            {
+                this.Invoke(new Action(() => {
+                    genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                }));
+            }
+            else
+            {
+                //不存在文件
+                Directory.CreateDirectory("log");//创建该文件
+                this.Invoke(new Action(() => {
+                    genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
+                }));
             }
         }
 
@@ -1663,7 +1728,7 @@ namespace AzureSQL
                 this.tabControl1.SelectTab(2);
             }
             chart2.ChartAreas[0].AxisX.Title = "时 间";
-            chart2.ChartAreas[0].AxisY.Title = "温 度";
+            chart2.ChartAreas[0].AxisY.Title = "温 度 ℃";
 
             // MessageBox.Show(dt.TableName+"_"+n.ToString());
             this.chart2.Titles[0].Text = "堆栈" + this.dateTimePicker4.Value.ToString("yyyy-MM-dd") + " 温度曲线";
@@ -1697,6 +1762,20 @@ namespace AzureSQL
                 }
                 else { break; }
             }
+            if (System.IO.File.Exists("log"))
+            {
+                this.Invoke(new Action(() => {
+                    genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
+                }));
+            }
+            else
+            {
+                //不存在文件
+                Directory.CreateDirectory("log");//创建该文件
+                this.Invoke(new Action(() => {
+                    genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
+                }));
+            }
         }
 
         private void button17_Click_1(object sender, EventArgs e)
@@ -1712,13 +1791,13 @@ namespace AzureSQL
                 this.tabControl1.SelectTab(2);
             }
             chart2.ChartAreas[0].AxisX.Title = "时 间";
-            chart2.ChartAreas[0].AxisY.Title = "温 度";
+            chart2.ChartAreas[0].AxisY.Title = "温 度 ℃";
 
             // MessageBox.Show(dt.TableName+"_"+n.ToString());
             this.chart2.Titles[0].Text = "堆栈" + this.dateTimePicker6.Value.ToString("yyyy-MM-dd") + "到" + this.dateTimePicker5.Value.ToString("yyyy-MM-dd") + " 温度曲线";
             for (int stack_id = 1; stack_id <= 12; stack_id++)
             {
-                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp)，Temperature FROM [dbo].[StackValues] where (DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) between '" + this.dateTimePicker6.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker5.Value.ToString("yyyy-MM-dd") + "')  AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                string querysql = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),Temperature FROM [dbo].[StackValues] where (DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) between '" + this.dateTimePicker6.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker5.Value.ToString("yyyy-MM-dd") + "')  AND Stack_Id=" + stack_id + " order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
                 //MessageBox.Show(querysql);
                 DataTable dt = DataQueryTable(0, querysql);
                 if (dt != null)
@@ -1746,6 +1825,20 @@ namespace AzureSQL
                 }
                 else { break; }
             }
+            if (System.IO.File.Exists("log"))
+            {
+                this.Invoke(new Action(() => {
+                    genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
+                }));
+            }
+            else
+            {
+                //不存在文件
+                Directory.CreateDirectory("log");//创建该文件
+                this.Invoke(new Action(() => {
+                    genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
+                }));
+            }
         }
 
         #region 日志记录、支持其他线程访问 
@@ -1760,9 +1853,27 @@ namespace AzureSQL
             this.richTextBox1.SelectionColor = color;
             this.richTextBox1.AppendText(text);
             this.richTextBox1.AppendText("\n");
+            //scroll滚到底部
             this.richTextBox1.SelectionStart = this.richTextBox1.Text.Length;
             this.richTextBox1.SelectionLength = 0;
             this.richTextBox1.Focus();
+            //写入文件
+            try
+            {
+                string logFileName = "LogName" + DateTime.Now.ToString("yyyy-MM-dd") + ".log";
+                using (TextWriter logFile = TextWriter.Synchronized(File.AppendText(logFileName)))
+                {
+                    logFile.WriteLine(text);
+                    logFile.Flush();
+                    logFile.Close();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Log Create Error:" + ex.Message.ToString());
+            }
+
         }
         /// <summary> 
         /// 显示错误日志 
@@ -1771,7 +1882,8 @@ namespace AzureSQL
         public void LogError(string text)
         {
             LogAppendDelegate la = new LogAppendDelegate(LogAppend);
-            this.richTextBox1.Invoke(la, Color.Red, DateTime.Now.ToString("HH:mm:ss ") +" Error:"+text);
+            this.richTextBox1.Invoke(la, Color.Red, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") +" Error:"+text);
+
         }
         /// <summary> 
         /// 显示警告信息 
@@ -1780,7 +1892,7 @@ namespace AzureSQL
         public void LogWarning(string text)
         {
             LogAppendDelegate la = new LogAppendDelegate(LogAppend);
-            this.richTextBox1.Invoke(la, Color.Yellow, DateTime.Now.ToString("HH:mm:ss ") + " Warning:" + text);
+            this.richTextBox1.Invoke(la, Color.Yellow, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Warning:" + text);
         }
         /// <summary> 
         /// 显示信息 
@@ -1789,9 +1901,15 @@ namespace AzureSQL
         public void LogMessage(string text)
         {
             LogAppendDelegate la = new LogAppendDelegate(LogAppend);
-            this.richTextBox1.Invoke(la, Color.LightGray, DateTime.Now.ToString("HH:mm:ss ") + " Message:" + text);
+            this.richTextBox1.Invoke(la, Color.LightGray, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Message:" + text);
         }
         #endregion
+
+        //生成图片
+        public void genpic(Chart chart,string chartname)
+        {
+                chart.SaveImage(chartname+".png", System.Windows.Forms.DataVisualization.Charting.ChartImageFormat.Png);
+        }
 
         public void drawLine_SOC(int n, string linename, List<DateTime> x, List<double> y)
         {
@@ -1803,7 +1921,7 @@ namespace AzureSQL
                                                           // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
             this.chart3.Series[n].XValueType = ChartValueType.DateTime;
             this.chart3.Series[n].Label = "#VAL"; //设置显示X Y的值 
-            this.chart3.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm}\r#VAL"; //鼠标移动到对应点显示数值
+            this.chart3.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm}\r#VAL%"; //鼠标移动到对应点显示数值
             this.chart3.Series[n].ChartArea = this.chart3.ChartAreas[0].Name; //设置图表背景框ChartArea 
 
             //开启小箭头及数据显示
@@ -1882,6 +2000,20 @@ namespace AzureSQL
                 }
                 else { break; }
             }
+            if (System.IO.File.Exists("log"))
+            {
+                this.Invoke(new Action(() => {
+                    genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
+                }));
+            }
+            else
+            {
+                //不存在文件
+                Directory.CreateDirectory("log");//创建该文件
+                this.Invoke(new Action(() => {
+                    genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
+                }));
+            }
         }
 
         private void chart3_MouseMove(object sender, MouseEventArgs e)
@@ -1941,6 +2073,62 @@ namespace AzureSQL
                     drawLine_SOC(stack_id - 1, "stack" + stack_id.ToString(), x, y);
                 }
                 else { break; }
+            }
+            if (System.IO.File.Exists("log"))
+            {
+                this.Invoke(new Action(() => {
+                    genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
+                }));
+            }
+            else
+            {
+                //不存在文件
+                Directory.CreateDirectory("log");//创建该文件
+                this.Invoke(new Action(() => {
+                    genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
+                }));
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            LogMessage("关闭程序");
+        }
+
+        private void 保存图像ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+             string whichcontrol_name =contextMenuStrip1.SourceControl.Name;
+            Chart chart = null;
+            //MessageBox.Show(whichcontrol_name);
+            if (whichcontrol_name == "chart1")
+            {
+                chart = this.chart1;
+            }
+            else if (whichcontrol_name == "chart2")
+            {
+                chart = this.chart2;
+            }
+            else if (whichcontrol_name == "chart3")
+            {
+                chart = this.chart3;
+            }
+            else { return; }
+            if (System.IO.File.Exists("log"))
+            {
+                this.Invoke(new Action(() => {
+                    genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
+                    MessageBox.Show("保存");
+                }));
+                
+            }
+            else
+            {
+                //不存在文件
+                Directory.CreateDirectory("log");//创建该文件
+                this.Invoke(new Action(() => {
+                    genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
+                    MessageBox.Show("保存");
+                }));
             }
         }
     }
