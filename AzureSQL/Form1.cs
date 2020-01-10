@@ -37,6 +37,9 @@ namespace AzureSQL
             chart.ChartAreas[0].AxisX.ScrollBar.IsPositionedInside = true;//指滚动条位于图表区内还是图表区外
             chart.ChartAreas[0].AxisX.ScrollBar.Enabled = true;
             chart.ChartAreas[0].AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.All;
+
+            chart.ChartAreas[0].AxisX.ScrollBar.ButtonColor = System.Drawing.Color.Silver;
+            chart.ChartAreas[0].AxisY.ScrollBar.ButtonColor = System.Drawing.Color.Silver;
             chart.ChartAreas[0].AxisX.ScrollBar.IsPositionedInside = false;
             chart.ChartAreas[0].AxisX.ScrollBar.Size = 20;
 
@@ -1219,25 +1222,42 @@ namespace AzureSQL
 
         private void chart1_MouseMove(object sender, MouseEventArgs e)
         {
-            int _currentPointX = e.X;
-            int _currentPointY = e.Y;
 
-            this.chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
-            this.chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
-            //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
-            var pos = e.Location;
-            var results = chart1.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint);
-            foreach (var result in results)
+            if (this.chart1.Series.Count > 0)
             {
-                if (result.ChartElementType == ChartElementType.DataPoint)
+                this.chart1.ChartAreas[0].CursorX.IsUserEnabled = true;
+                this.chart1.ChartAreas[0].CursorY.IsUserEnabled = true;
+                this.chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+                this.chart1.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
+                int _currentPointX = e.X;
+                int _currentPointY = e.Y;
+                this.chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+                this.chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+                //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
+                /*
+                var pos = e.Location;
+                var results = chart1.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint);
+                foreach (var result in results)
                 {
-                    //  result.
-                    var xVal = result.PointIndex;
-                    var yVal = this.chart1.Series[0].Points[xVal].YValues[0];
-                    this.label2.Text = string.Format("{0},{1}", DateTime.FromOADate(this.chart1.Series[0].Points[xVal].XValue), yVal);
+                    if (result.ChartElementType == ChartElementType.DataPoint)
+                    {
+                        //  result.
+                        var xVal = result.PointIndex;
+                        var yVal = this.chart1.Series[0].Points[xVal].YValues[0];
+                        this.label2.Text = string.Format("{0},{1}", DateTime.FromOADate(this.chart1.Series[0].Points[xVal].XValue), yVal);
 
+                    }
                 }
+                */
             }
+            else
+            {
+                this.chart1.ChartAreas[0].CursorX.IsUserEnabled = false;
+                this.chart1.ChartAreas[0].CursorY.IsUserEnabled = false;
+                this.chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = false;
+                this.chart1.ChartAreas[0].CursorY.IsUserSelectionEnabled = false;
+            }
+               
         }
 
         public void drawLine_temp(int n, string linename, List<DateTime> x, List<double> y)
@@ -1285,12 +1305,27 @@ namespace AzureSQL
 
         private void chart2_MouseMove(object sender, MouseEventArgs e)
         {
-            int _currentPointX = e.X;
-            int _currentPointY = e.Y;
+            if (this.chart2.Series.Count > 0)
+            {
+                this.chart2.ChartAreas[0].CursorX.IsUserEnabled = true;
+                this.chart2.ChartAreas[0].CursorY.IsUserEnabled = true;
+                this.chart2.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+                this.chart2.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
+                int _currentPointX = e.X;
+                int _currentPointY = e.Y;
 
-            this.chart2.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
-            this.chart2.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
-            //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
+                this.chart2.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+                this.chart2.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+                //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
+            }
+            else
+            {
+                this.chart2.ChartAreas[0].CursorX.IsUserEnabled = false;
+                this.chart2.ChartAreas[0].CursorY.IsUserEnabled = false;
+                this.chart2.ChartAreas[0].CursorX.IsUserSelectionEnabled = false;
+                this.chart2.ChartAreas[0].CursorY.IsUserSelectionEnabled = false;
+            }
+
 
         }
 
@@ -1908,7 +1943,11 @@ namespace AzureSQL
         //生成图片
         public void genpic(Chart chart,string chartname)
         {
-                chart.SaveImage(chartname+".png", System.Windows.Forms.DataVisualization.Charting.ChartImageFormat.Png);
+            chart.ChartAreas[0].CursorX.LineWidth = 0;
+            chart.ChartAreas[0].CursorY.LineWidth = 0;
+            chart.SaveImage(chartname+".png", System.Windows.Forms.DataVisualization.Charting.ChartImageFormat.Png);
+            chart.ChartAreas[0].CursorX.LineWidth = 1;
+            chart.ChartAreas[0].CursorY.LineWidth = 1;
         }
 
         public void drawLine_SOC(int n, string linename, List<DateTime> x, List<double> y)
@@ -2018,12 +2057,27 @@ namespace AzureSQL
 
         private void chart3_MouseMove(object sender, MouseEventArgs e)
         {
-            int _currentPointX = e.X;
-            int _currentPointY = e.Y;
+            if (this.chart3.Series.Count > 0)
+            {
+                this.chart3.ChartAreas[0].CursorX.IsUserEnabled = true;
+                this.chart3.ChartAreas[0].CursorY.IsUserEnabled = true;
+                this.chart3.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+                this.chart3.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
+                int _currentPointX = e.X;
+                int _currentPointY = e.Y;
 
-            this.chart3.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
-            this.chart3.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
-            //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
+                this.chart3.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+                this.chart3.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
+                //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
+            }
+            else 
+            {
+                this.chart3.ChartAreas[0].CursorX.IsUserEnabled = false;
+                this.chart3.ChartAreas[0].CursorY.IsUserEnabled = false;
+                this.chart3.ChartAreas[0].CursorX.IsUserSelectionEnabled = false;
+                this.chart3.ChartAreas[0].CursorY.IsUserSelectionEnabled = false;
+            }
+
         }
 
         //soc a-b
@@ -2097,27 +2151,14 @@ namespace AzureSQL
 
         private void 保存图像ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-             string whichcontrol_name =contextMenuStrip1.SourceControl.Name;
-            Chart chart = null;
-            //MessageBox.Show(whichcontrol_name);
-            if (whichcontrol_name == "chart1")
-            {
-                chart = this.chart1;
-            }
-            else if (whichcontrol_name == "chart2")
-            {
-                chart = this.chart2;
-            }
-            else if (whichcontrol_name == "chart3")
-            {
-                chart = this.chart3;
-            }
-            else { return; }
-            if (System.IO.File.Exists("log"))
+             string whichcontrol_name =contextMenuStrip1.SourceControl.Name.Trim();
+            Chart chart = (Chart)this.tabControl1.Controls.Find(whichcontrol_name,true)[0];
+            if (System.IO.Directory.Exists("log"))
             {
                 this.Invoke(new Action(() => {
+
                     genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
-                    MessageBox.Show("保存");
+                    MessageBox.Show("截图成功");
                 }));
                 
             }
@@ -2127,7 +2168,7 @@ namespace AzureSQL
                 Directory.CreateDirectory("log");//创建该文件
                 this.Invoke(new Action(() => {
                     genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
-                    MessageBox.Show("保存");
+                    MessageBox.Show("创建log文件，截图成功");
                 }));
             }
         }
