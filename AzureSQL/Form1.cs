@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Threading.Tasks;
 using System.IO;
+using System.ServiceProcess;
 
 namespace AzureSQL
 {
@@ -34,25 +35,26 @@ namespace AzureSQL
         {
             chart.Series.Clear();
 
-            chart.ChartAreas[0].AxisX.ScrollBar.IsPositionedInside = true;//指滚动条位于图表区内还是图表区外
             chart.ChartAreas[0].AxisX.ScrollBar.Enabled = true;
             chart.ChartAreas[0].AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.All;
-
             chart.ChartAreas[0].AxisX.ScrollBar.ButtonColor = System.Drawing.Color.Silver;
             chart.ChartAreas[0].AxisY.ScrollBar.ButtonColor = System.Drawing.Color.Silver;
             chart.ChartAreas[0].AxisX.ScrollBar.IsPositionedInside = false;
+            chart.ChartAreas[0].AxisY.ScrollBar.IsPositionedInside = false;
             chart.ChartAreas[0].AxisX.ScrollBar.Size = 20;
 
             chart.ChartAreas[0].AxisX.ScaleView.Position = 1;//指当前(最右边)显示的是第几个点,可以设为当前一共的数据减去Size；
                                                              // chart.ChartAreas[0].AxisX.ScaleView.Size = 80;//视野范围内共有多少个数据点
+            chart.ChartAreas[0].AxisX.ScaleView.MinSize = 0;//设置滚动一次，移动几格区域
             chart.ChartAreas[0].Axes[0].MajorGrid.LineDashStyle = ChartDashStyle.Dash; //网格类型 短横线
             chart.ChartAreas[0].Axes[0].MajorGrid.LineColor = Color.Gray;
             chart.ChartAreas[0].Axes[0].MajorTickMark.Enabled = true; // x轴上突出的小点
             chart.ChartAreas[0].Axes[0].MajorTickMark.Enabled = true;
             chart.ChartAreas[0].AxisX.MajorGrid.Interval = 0; //
             chart.ChartAreas[0].AxisX.LabelStyle.Format = "yyyy-MM-dd HH:mm";
-           // chart.ChartAreas[0].AxisX.LabelStyle.IntervalType = DateTimeIntervalType.Minutes;
-           // chart.ChartAreas[0].AxisX.MajorGrid.IntervalType = DateTimeIntervalType.Minutes;
+            chart.ChartAreas[0].AxisX.IsLabelAutoFit = true;
+            // chart.ChartAreas[0].AxisX.LabelStyle.IntervalType = DateTimeIntervalType.Minutes;
+            // chart.ChartAreas[0].AxisX.MajorGrid.IntervalType = DateTimeIntervalType.Minutes;
 
 
             chart.ChartAreas[0].Axes[1].MajorGrid.LineDashStyle = ChartDashStyle.Dash; //网格类型 短横线
@@ -60,20 +62,41 @@ namespace AzureSQL
             //x区域放大
             chart.ChartAreas[0].CursorX.IsUserEnabled = true;
             chart.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+            chart.ChartAreas[0].CursorX.Interval = 0;
+            chart.ChartAreas[0].CursorX.IntervalOffset = 0;
+            chart.ChartAreas[0].CursorX.IntervalType = DateTimeIntervalType.Minutes;
+            chart.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
             //Y区域放大
             chart.ChartAreas[0].CursorY.IsUserEnabled = true;
             chart.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
         }
-        public delegate string dele();
+       // public delegate string dele();
         private void Form1_Load(object sender, EventArgs e)
         {
             //string datestring = this.dateTimePicker1.Value.ToShortDateString();
             // MessageBox.Show(datestring);
             LogMessage("打开软件");
             this.toolStripStatusLabel1.Text = "远程数据库连接中...";
+            this.toolStripStatusLabel3.Text = "本地数据库连接中...";
             this.button15.Enabled = false;
-            Task t1 = Task.Factory.StartNew(()=>connected());
+            Task t1 = Task.Factory.StartNew(() => connected(1));
+          
+            //
+            ServiceController scSQL = new ServiceController();
+            scSQL.MachineName = "DESKTOP-6PELLNP";
+            scSQL.ServiceName = "MSSQL$SQLEXPRESS";
+            if (scSQL.Status == ServiceControllerStatus.Stopped)
+            {
+                scSQL.Start();
+                this.toolStripStatusLabel3.Text = scSQL.ServiceName + "服务开启成功";
 
+                Task t2 = Task.Factory.StartNew(() => connected(0));
+            }
+            else
+            {
+                this.toolStripStatusLabel3.Text = scSQL.ServiceName + "服务已经开启";
+                Task t2 = Task.Factory.StartNew(() => connected(0));
+            }
             /*
                         using (SqlConnection connection = new SqlConnection(connectionStr))
                         {
@@ -137,18 +160,21 @@ namespace AzureSQL
                             }
                         }
                         */
-             //初始化节点
+            //初始化节点
             this.treeView1.Nodes.Add("GS200");
             TreeNode Fnode = this.treeView1.Nodes[0];
+            Fnode.ImageIndex = 0;
             Font boldFont = new Font(treeView1.Font, FontStyle.Bold);
             Fnode.NodeFont = boldFont;
             Fnode.Text = "GS200";
             for (int i = 1; i <= 12; i++)
             {
                 Fnode.Nodes.Add("Stack_" + i.ToString());
+                Fnode.Nodes[i-1].ImageIndex = 1;
                 for (int j = 1; j <= 30; j++)
                 {
                     Fnode.Nodes[i - 1].Nodes.Add("Cell_" + j.ToString());
+                    Fnode.Nodes[i-1].Nodes[j - 1].ImageIndex = 2;
                 }
             }
 
@@ -158,31 +184,50 @@ namespace AzureSQL
 
         }
         /// <summary>
-        /// 测试远程连接
+        /// 测试远程连接 
+        /// localorRemote 
+        /// 0：本地数据库。其他：远程数据库
         /// </summary>
-        public void connected()
+        public void connected(int localorRemote)
         {
-            using (SqlConnection connection = new SqlConnection(connectionStr))
+            string conn = null, localstr = "";
+            ToolStripStatusLabel toolstripstatuslabel = null;
+            if (localorRemote == 0)
             {
+                //本地
+                conn = connectionLocalStr;
+                localstr = "本地数据库";
+                toolstripstatuslabel = toolStripStatusLabel3;
+            }
+            else
+            {
+                //远程
+                conn = connectionStr;
+                localstr = "远程数据库";
+                toolstripstatuslabel = toolStripStatusLabel1;
+            }
+            using (SqlConnection connection = new SqlConnection(conn))
+            {
+
                 try
                 {
                     connection.Open();
                     if (connection.State == ConnectionState.Open)
                     {
                         this.Invoke(new Action(() => {
-                            this.toolStripStatusLabel1.Text = "远程数据库连接成功！";
-                            this.toolStripStatusLabel1.ForeColor = Color.Green;
+                            toolstripstatuslabel.Text = localstr + "连接成功！";
+                            toolstripstatuslabel.ForeColor = Color.Green;
                             this.button15.Enabled = true;
-                            LogMessage("远程数据库连接成功！");
+                            LogMessage(localstr + "连接成功！查询数据表成功");
                         }));  
                     }
                     else
                     {
                         this.Invoke(new Action(() => {
-                            this.toolStripStatusLabel1.Text = "远程数据库未连接！" + connection.State.ToString();
-                            this.toolStripStatusLabel1.ForeColor = Color.Red;
+                            toolstripstatuslabel.Text = localstr + "未连接！" + connection.State.ToString();
+                            toolstripstatuslabel.ForeColor = Color.Red;
                             this.button15.Enabled = false;
-                            LogWarning("远程数据库未连接！" + connection.State.ToString());
+                            LogWarning(localstr + "未连接！" + connection.State.ToString());
                         }));
                       
                     }
@@ -199,11 +244,12 @@ namespace AzureSQL
                             "Procedure: " + exp.Errors[i].Procedure + "\n");
                     }
                     MessageBox.Show(errorMessages.ToString());
-                    LogError("远程数据库连接失败！" + errorMessages.ToString());
+                   
                     this.Invoke(new Action(() => {
-                        this.toolStripStatusLabel1.Text = "远程数据库连接失败！";
-                        this.toolStripStatusLabel1.ForeColor = Color.Red;
+                        toolstripstatuslabel.Text = localstr + "连接失败！";
+                        toolstripstatuslabel.ForeColor = Color.Red;
                         this.button15.Enabled = false;
+                        LogError(localstr+"连接失败！" + errorMessages.ToString());
                     }));
                 }
 
@@ -1071,6 +1117,8 @@ namespace AzureSQL
         {
 
             LogMessage("在chart1系列"+n.ToString()+",绘制曲线："+ linename);
+            this.chart1.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+            this.chart1.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
             //this.chart1.Series.Clear();
             // this.chart1.Series[0].Points.Clear();
             this.chart1.Series.Add(new Series(linename)); //添加一个图表序列
@@ -1080,7 +1128,7 @@ namespace AzureSQL
             this.chart1.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm} \r#VALV"; //鼠标移动到对应点显示数值
             this.chart1.Series[n].ChartArea = this.chart1.ChartAreas[0].Name; //设置图表背景框ChartArea 
 
-
+            /*
 
             //开启小箭头及数据显示
 
@@ -1104,7 +1152,7 @@ namespace AzureSQL
                 this.chart1.Series[n].LabelForeColor = Color.Black;
             }
 
-
+            */
             this.chart1.Series[n].ChartType = SeriesChartType.FastLine; //图类型(折线)
             this.chart1.Series[n].BorderWidth = 2;
             this.chart1.Series[n].Points.DataBindXY(x, y); //添加数据
@@ -1264,6 +1312,8 @@ namespace AzureSQL
         {
 
             LogMessage("在chart2系列" + n.ToString() + ",绘制曲线" + linename);
+            this.chart2.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+            this.chart2.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
             //this.chart2.Series.Clear();
             // this.chart2.Series[0].Points.Clear();
             this.chart2.Series.Add(new Series(linename)); //添加一个图表序列
@@ -1459,16 +1509,19 @@ namespace AzureSQL
         {
             this.label9.Text = this.treeView1.SelectedNode.FullPath;
             TreeNode Fnode = this.treeView1.Nodes[0];
-            Fnode.BackColor = Color.FromArgb(64, 64, 64);
+            Fnode.BackColor = Color.FromArgb(224, 224, 224);
             for (int i = 0; i < 12; i++)
             {
-                Fnode.Nodes[i].BackColor = Color.FromArgb(64, 64, 64);
+                Fnode.Nodes[i].BackColor = Color.FromArgb(224, 224, 224);
                 for (int j = 0; j < 30; j++)
                 {
-                    Fnode.Nodes[i].Nodes[j].BackColor = Color.FromArgb(64, 64, 64);
+                    Fnode.Nodes[i].Nodes[j].BackColor = Color.FromArgb(224, 224, 224);
                     // this.treeView1.Nodes[0].BackColor = Color.White;
                 }
             }
+            //图标保持不变
+            this.treeView1.SelectedNode.SelectedImageIndex = this.treeView1.SelectedNode.Level;
+
 
             if (this.tabControl1.SelectedIndex == 1)//电压
             {
@@ -1736,13 +1789,13 @@ namespace AzureSQL
         {
 
             TreeNode Fnode = this.treeView1.Nodes[0];
-            Fnode.BackColor = Color.FromArgb(64,64,64);
+            Fnode.BackColor = Color.FromArgb(224,224,224);
             for (int i = 0; i < 12; i++)
             {
-                Fnode.Nodes[i].BackColor = Color.FromArgb(64, 64, 64);
+                Fnode.Nodes[i].BackColor = Color.FromArgb(224, 224, 224);
                 for (int j = 0; j < 30; j++)
                 {
-                    Fnode.Nodes[i].Nodes[j].BackColor = Color.FromArgb(64, 64, 64);
+                    Fnode.Nodes[i].Nodes[j].BackColor = Color.FromArgb(224, 224, 224);
                     // this.treeView1.Nodes[0].BackColor = Color.White;
                 }
             }
@@ -1895,13 +1948,27 @@ namespace AzureSQL
             //写入文件
             try
             {
-                string logFileName = "LogName" + DateTime.Now.ToString("yyyy-MM-dd") + ".log";
-                using (TextWriter logFile = TextWriter.Synchronized(File.AppendText(logFileName)))
+                if (System.IO.Directory.Exists("log"))
                 {
-                    logFile.WriteLine(text);
-                    logFile.Flush();
-                    logFile.Close();
+                    string logFileName = @"log/LogName" + DateTime.Now.ToString("yyyy-MM-dd") + ".log";
+                    using (TextWriter logFile = TextWriter.Synchronized(File.AppendText(logFileName)))
+                    {
+                        logFile.WriteLine(text);
+                        logFile.Flush();
+                        logFile.Close();
+                    }
                 }
+                else {
+                    Directory.CreateDirectory("log");//创建该文件
+                    string logFileName = @"log/LogName" + DateTime.Now.ToString("yyyy-MM-dd") + ".log";
+                    using (TextWriter logFile = TextWriter.Synchronized(File.AppendText(logFileName)))
+                    {
+                        logFile.WriteLine(text);
+                        logFile.Flush();
+                        logFile.Close();
+                    }
+                }
+                    
 
             }
             catch (Exception ex)
@@ -1954,6 +2021,8 @@ namespace AzureSQL
         {
 
             LogMessage("在chart3系列" + n.ToString() + ",绘制曲线" + linename);
+            this.chart3.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+            this.chart3.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
             //this.chart2.Series.Clear();
             // this.chart2.Series[0].Points.Clear();
             this.chart3.Series.Add(new Series(linename)); //添加一个图表序列
@@ -2039,7 +2108,7 @@ namespace AzureSQL
                 }
                 else { break; }
             }
-            if (System.IO.File.Exists("log"))
+            if (System.IO.Directory.Exists("log"))
             {
                 this.Invoke(new Action(() => {
                     genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
@@ -2128,7 +2197,7 @@ namespace AzureSQL
                 }
                 else { break; }
             }
-            if (System.IO.File.Exists("log"))
+            if (System.IO.Directory.Exists("log"))
             {
                 this.Invoke(new Action(() => {
                     genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
@@ -2140,6 +2209,7 @@ namespace AzureSQL
                 Directory.CreateDirectory("log");//创建该文件
                 this.Invoke(new Action(() => {
                     genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
+                   // MessageBox.Show("创建log文件，截图成功");
                 }));
             }
         }
@@ -2153,24 +2223,39 @@ namespace AzureSQL
         {
              string whichcontrol_name =contextMenuStrip1.SourceControl.Name.Trim();
             Chart chart = (Chart)this.tabControl1.Controls.Find(whichcontrol_name,true)[0];
-            if (System.IO.Directory.Exists("log"))
+            if (chart.Series.Count > 0)
             {
-                this.Invoke(new Action(() => {
+                if (System.IO.Directory.Exists("log"))
+                {
+                    this.Invoke(new Action(() => {
 
-                    genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
-                    MessageBox.Show("截图成功");
-                }));
-                
+                        genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
+                        MessageBox.Show("截图成功");
+                    }));
+                }
+                else
+                {
+                    //不存在文件
+                    Directory.CreateDirectory("log");//创建该文件
+                    this.Invoke(new Action(() => {
+                        genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
+                        MessageBox.Show("创建log文件，截图成功");
+                    }));
+                }
             }
-            else
+           
+        }
+
+        private void 还原toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            string whichcontrol_name = contextMenuStrip1.SourceControl.Name.Trim();
+            Chart chart = (Chart)this.tabControl1.Controls.Find(whichcontrol_name, true)[0];
+            if (chart.Series.Count > 0)
             {
-                //不存在文件
-                Directory.CreateDirectory("log");//创建该文件
-                this.Invoke(new Action(() => {
-                    genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
-                    MessageBox.Show("创建log文件，截图成功");
-                }));
+                chart.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+                chart.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
             }
+
         }
     }
 }

@@ -42,6 +42,7 @@
             System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title3 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.label3 = new System.Windows.Forms.Label();
@@ -73,6 +74,7 @@
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.保存图像ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.还原toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.button4 = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
@@ -101,6 +103,7 @@
             this.chart3 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.label9 = new System.Windows.Forms.Label();
             this.treeView1 = new System.Windows.Forms.TreeView();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.button3 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
@@ -205,8 +208,8 @@
             // toolStripStatusLabel4
             // 
             this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
-            this.toolStripStatusLabel4.Size = new System.Drawing.Size(15, 20);
-            this.toolStripStatusLabel4.Text = "/";
+            this.toolStripStatusLabel4.Size = new System.Drawing.Size(17, 20);
+            this.toolStripStatusLabel4.Text = "  ";
             // 
             // toolStripStatusLabel3
             // 
@@ -516,9 +519,10 @@
             // 
             this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.保存图像ToolStripMenuItem});
+            this.保存图像ToolStripMenuItem,
+            this.还原toolStripMenuItem1});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(139, 28);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(139, 52);
             // 
             // 保存图像ToolStripMenuItem
             // 
@@ -526,6 +530,13 @@
             this.保存图像ToolStripMenuItem.Size = new System.Drawing.Size(138, 24);
             this.保存图像ToolStripMenuItem.Text = "保存图像";
             this.保存图像ToolStripMenuItem.Click += new System.EventHandler(this.保存图像ToolStripMenuItem_Click);
+            // 
+            // 还原toolStripMenuItem1
+            // 
+            this.还原toolStripMenuItem1.Name = "还原toolStripMenuItem1";
+            this.还原toolStripMenuItem1.Size = new System.Drawing.Size(138, 24);
+            this.还原toolStripMenuItem1.Text = "还原";
+            this.还原toolStripMenuItem1.Click += new System.EventHandler(this.还原toolStripMenuItem1_Click);
             // 
             // checkBox1
             // 
@@ -934,15 +945,26 @@
             this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.treeView1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.treeView1.Font = new System.Drawing.Font("宋体", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.treeView1.ForeColor = System.Drawing.SystemColors.Window;
+            this.treeView1.ForeColor = System.Drawing.SystemColors.MenuText;
+            this.treeView1.ImageIndex = 0;
+            this.treeView1.ImageList = this.imageList1;
             this.treeView1.Location = new System.Drawing.Point(3, 25);
             this.treeView1.Name = "treeView1";
+            this.treeView1.SelectedImageIndex = 0;
             this.treeView1.Size = new System.Drawing.Size(175, 446);
             this.treeView1.TabIndex = 43;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             this.treeView1.Leave += new System.EventHandler(this.treeView1_Leave);
+            // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList1.Images.SetKeyName(0, "gs200.png");
+            this.imageList1.Images.SetKeyName(1, "7956f15fd826bac.png");
+            this.imageList1.Images.SetKeyName(2, "cell.png");
             // 
             // button3
             // 
@@ -1112,9 +1134,9 @@
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(7, 5);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(37, 15);
+            this.label7.Size = new System.Drawing.Size(67, 15);
             this.label7.TabIndex = 45;
-            this.label7.Text = "结构";
+            this.label7.Text = "堆栈结构";
             // 
             // splitContainer1
             // 
@@ -1315,6 +1337,8 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem 保存图像ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 还原toolStripMenuItem1;
+        private System.Windows.Forms.ImageList imageList1;
     }
 }
 
