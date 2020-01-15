@@ -81,5 +81,14 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\center0.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\center1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\center-1.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

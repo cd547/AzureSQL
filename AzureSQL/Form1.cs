@@ -85,12 +85,23 @@ namespace AzureSQL
             ServiceController scSQL = new ServiceController();
             scSQL.MachineName = "DESKTOP-6PELLNP";
             scSQL.ServiceName = "MSSQL$SQLEXPRESS";
+
             if (scSQL.Status == ServiceControllerStatus.Stopped)
             {
-                scSQL.Start();
-                this.toolStripStatusLabel3.Text = scSQL.ServiceName + "服务开启成功";
+                try
+                {
+                    scSQL.Start();// 启动服务
+                    scSQL.WaitForStatus(ServiceControllerStatus.Running);
+                    this.toolStripStatusLabel3.Text = scSQL.ServiceName + "服务开启成功";
+                    Task t2 = Task.Factory.StartNew(() => connected(0));
+                }
+                catch (InvalidOperationException)
+                {
+                    MessageBox.Show("不能启动该服务！");
+                }
+               
 
-                Task t2 = Task.Factory.StartNew(() => connected(0));
+                
             }
             else
             {
@@ -215,15 +226,17 @@ namespace AzureSQL
                     if (connection.State == ConnectionState.Open)
                     {
                         this.Invoke(new Action(() => {
+                            toolstripstatuslabel.Image = Properties.Resources.center1;
                             toolstripstatuslabel.Text = localstr + "连接成功！";
                             toolstripstatuslabel.ForeColor = Color.Green;
                             this.button15.Enabled = true;
-                            LogMessage(localstr + "连接成功！查询数据表成功");
+                            LogMessage(localstr + "连接成功！");
                         }));  
                     }
                     else
                     {
                         this.Invoke(new Action(() => {
+                            toolstripstatuslabel.Image = Properties.Resources.center0;
                             toolstripstatuslabel.Text = localstr + "未连接！" + connection.State.ToString();
                             toolstripstatuslabel.ForeColor = Color.Red;
                             this.button15.Enabled = false;
@@ -246,6 +259,7 @@ namespace AzureSQL
                     MessageBox.Show(errorMessages.ToString());
                    
                     this.Invoke(new Action(() => {
+                        toolstripstatuslabel.Image = Properties.Resources.center0;
                         toolstripstatuslabel.Text = localstr + "连接失败！";
                         toolstripstatuslabel.ForeColor = Color.Red;
                         this.button15.Enabled = false;
@@ -993,7 +1007,7 @@ namespace AzureSQL
                     {
                         toolstripstatuslabel.Text = localstr+"连接成功！";
                         toolstripstatuslabel.ForeColor = Color.Green;
-
+                        toolstripstatuslabel.Image = Properties.Resources.center1;
 
                         string strCommand = sql;
 
@@ -1014,6 +1028,7 @@ namespace AzureSQL
                     }
                     else
                     {
+                        toolstripstatuslabel.Image = Properties.Resources.center0;
                         toolstripstatuslabel.Text = localstr+"未连接！" + connection.State.ToString();
                         toolstripstatuslabel.ForeColor = Color.Red;
                         LogWarning(localstr + "未连接！" + connection.State.ToString());
@@ -1032,7 +1047,7 @@ namespace AzureSQL
                             "Procedure: " + exp.Errors[i].Procedure + "\n");
                     }
                     MessageBox.Show(errorMessages.ToString());
-
+                    toolstripstatuslabel.Image = Properties.Resources.center0;
                     toolstripstatuslabel.Text = localstr+"连接失败！";
                     toolstripstatuslabel.ForeColor = Color.Red;
                     LogError(localstr+"连接失败！" + errorMessages.ToString());
