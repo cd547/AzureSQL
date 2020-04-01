@@ -15,9 +15,24 @@ using System.Threading.Tasks;
 using System.IO;
 using System.ServiceProcess;
 using System.Runtime.InteropServices;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System.Diagnostics;
 
 namespace AzureSQL
 {
+
+    /// <summary>
+    /// SqlAuthenticationProvider - Is a public class that defines 3 different Azure AD
+    /// authentication methods.  The methods are supported in the new .NET 4.7.2.
+    ///  . 
+    /// 1. Interactive,  2. Integrated,  3. Password
+    ///  . 
+    /// All 3 authentication methods are based on the Azure
+    /// Active Directory Authentication Library (ADAL) managed library.
+    /// </summary>
+    /// 
+
+
     public partial class Form1 : Form
     {
         public Form1()
@@ -28,8 +43,8 @@ namespace AzureSQL
         List<string> txData2 = new List<string>();
         List<double> tyData2 = new List<double>();
         List<double> tyData3 = new List<double>();
-
-        string connectionStr = "Server=tcp:cnvizn.database.chinacloudapi.cn,1433;Initial Catalog=cnvizn;Persist Security Info=False;User ID=weview@weview.partner.onmschina.cn;Password=Wv123456;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Authentication=\"Active Directory Password\";";
+        ToolTip toolTip = new ToolTip();
+        string connectionStr = "Server=tcp:cnvizn.database.chinacloudapi.cn,1433;Initial Catalog=cnvizn;Persist Security Info=False;User ID=weview@weview.partner.onmschina.cn;Password=Wv5454794547;Connect Timeout=10;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Authentication=\"Active Directory Password\";";
         string connectionLocalStr = @"Data Source=DESKTOP-6PELLNP\SQLEXPRESS;Initial Catalog=azuredb;User ID=sa;Password=5454794547;Connect Timeout=10;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;";
         //////自定义函数区///////
         /// <summary>
@@ -75,7 +90,7 @@ namespace AzureSQL
             chart.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
 
             chart.Legends[0].LegendStyle = LegendStyle.Table;
-           
+
             //chart.Legends[0].
             //chart.Legends[0].
         }
@@ -88,26 +103,17 @@ namespace AzureSQL
         {
             string conn = null, localstr = "";
             ToolStripStatusLabel toolstripstatuslabel = null;
+            bool signal = false;
+            string msg = "";
             if (localorRemote == 0)
             {
                 //本地
                 conn = connectionLocalStr;
                 localstr = "本地数据库";
                 toolstripstatuslabel = toolStripStatusLabel3;
-            }
-            else
-            {
-                //远程
-                conn = connectionStr;
-                localstr = "远程数据库";
-                toolstripstatuslabel = toolStripStatusLabel1;
-            }
-            bool signal = false;
-            string msg = "";
-            using (SqlConnection connection = new SqlConnection(conn))
+                using (SqlConnection connection = new SqlConnection(conn))
                 {
-
-                try
+                    try
                     {
                         connection.Open();
                         if (connection.State == ConnectionState.Open)
@@ -118,13 +124,12 @@ namespace AzureSQL
                         }
                         else
                         {
-                        signal = false;
-                        msg = localstr + "未连接！" + connection.State.ToString();
-                        LogWarning(msg);
-                        msg = localstr + "未连接！";
+                            signal = false;
+                            msg = localstr + "未连接！" + connection.State.ToString();
+                            LogWarning(msg);
+                            msg = localstr + "未连接！";
                         }
-
-                }
+                    }
                     catch (SqlException exp)
                     {
                         StringBuilder errorMessages = new StringBuilder();
@@ -140,12 +145,95 @@ namespace AzureSQL
                         signal = false;
                         msg = localstr + "连接失败！" + errorMessages.ToString();
                         LogError(msg);
-                    msg = localstr + "连接失败！";
+                        msg = localstr + "连接失败！";
+                    }
+
                 }
+            }
+            else
+            {
+                //远程
+                // conn = connectionStr;
+                localstr = "远程数据库";
+                toolstripstatuslabel = toolStripStatusLabel1;
+                var provider = new ActiveDirectoryAuthProvider();
+                System.Data.SqlClient.SqlAuthenticationProvider.SetProvider(
+                    System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive,
+                    //SC.SqlAuthenticationMethod.ActiveDirectoryIntegrated,  // Alternatives.
+                    //SC.SqlAuthenticationMethod.ActiveDirectoryPassword,
+                    provider);
+                System.Data.SqlClient.SqlConnectionStringBuilder builder = new System.Data.SqlClient.SqlConnectionStringBuilder();
+                builder["Data Source"] = "cnvizn.database.chinacloudapi.cn";
+
+                builder.UserID = "weview@weview.partner.onmschina.cn";
+                builder["Initial Catalog"] = "cnvizn";
+
+                // This "Password" is not used with .ActiveDirectoryInteractive.
+                //builder["Password"] = "<YOUR PASSWORD HERE>";
+
+                builder["Connect Timeout"] = 15;
+                builder["TrustServerCertificate"] = true;
+                builder.Pooling = false;
+                // Assigned enum value must match the enum given to .SetProvider().
+                builder.Authentication = System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive;
+                try
+                {
+                    using (System.Data.SqlClient.SqlConnection connection = new System.Data.SqlClient.SqlConnection(builder.ConnectionString))
+                    {
+                        try
+                        {
+                            connection.Open();
+                            if (connection.State == ConnectionState.Open)
+                            {
+                                signal = true;
+                                msg = localstr + "连接成功！";
+                                LogMessage(msg);
+                            }
+                            else
+                            {
+                                signal = false;
+                                msg = localstr + "未连接！" + connection.State.ToString();
+                                LogWarning(msg);
+                                msg = localstr + "未连接！";
+                            }
+                        }
+                        catch (SqlException exp)
+                        {
+                            StringBuilder errorMessages = new StringBuilder();
+                            for (int i = 0; i < exp.Errors.Count; i++)
+                            {
+                                errorMessages.Append("Index #" + i + "\n" +
+                                    "Message: " + exp.Errors[i].Message + "\n" +
+                                    "LineNumber: " + exp.Errors[i].LineNumber + "\n" +
+                                    "Source: " + exp.Errors[i].Source + "\n" +
+                                    "Procedure: " + exp.Errors[i].Procedure + "\n");
+                            }
+                            MessageBox.Show(errorMessages.ToString());
+                            signal = false;
+                            msg = localstr + "连接失败！" + errorMessages.ToString();
+                            LogError(msg);
+                            msg = localstr + "连接失败！";
+                        }
+
+                    }
+
+                }
+                catch (Exception exp)
+                { LogWarning(exp.ToString()); signal = false; msg = localstr + "连接失败！"; }
 
             }
-            this.Invoke(new Action(() =>
+
+
+            this.BeginInvoke(new Action(() =>
             {
+                if (localorRemote == 1)
+                {
+                    timer1.Stop();
+                }
+                else
+                {
+                    timer2.Stop();
+                }
                 toolstripstatuslabel.Image = signal ? Properties.Resources.center1 : Properties.Resources.center0;
                 toolstripstatuslabel.Text = msg;
                 toolstripstatuslabel.ForeColor = signal ? Color.WhiteSmoke : Color.Red;
@@ -154,6 +242,7 @@ namespace AzureSQL
                 { this.button15.Enabled = true; }
                 else
                 { this.button15.Enabled = false; }
+
 
             }));
 
@@ -207,17 +296,40 @@ namespace AzureSQL
         public void DataQuery(string sql)
         {
             string conn = null;
+            SqlConnection connection = null;
             if (this.radioButton1.Checked)
             {
                 //本地
                 conn = connectionLocalStr;
+                connection = new SqlConnection(conn);
             }
             else
             {
                 //远程
                 conn = connectionStr;
+                var provider = new ActiveDirectoryAuthProvider();
+                System.Data.SqlClient.SqlAuthenticationProvider.SetProvider(
+                    System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive,
+                    //SC.SqlAuthenticationMethod.ActiveDirectoryIntegrated,  // Alternatives.
+                    //SC.SqlAuthenticationMethod.ActiveDirectoryPassword,
+                    provider);
+                System.Data.SqlClient.SqlConnectionStringBuilder builder = new System.Data.SqlClient.SqlConnectionStringBuilder();
+                builder["Data Source"] = "cnvizn.database.chinacloudapi.cn";
+
+                builder.UserID = "weview@weview.partner.onmschina.cn";
+                builder["Initial Catalog"] = "cnvizn";
+
+                // This "Password" is not used with .ActiveDirectoryInteractive.
+                //builder["Password"] = "<YOUR PASSWORD HERE>";
+
+                builder["Connect Timeout"] = 15;
+                builder["TrustServerCertificate"] = true;
+                builder.Pooling = false;
+                // Assigned enum value must match the enum given to .SetProvider().
+                builder.Authentication = System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive;
+                connection = new System.Data.SqlClient.SqlConnection(builder.ConnectionString);
             }
-            using (SqlConnection connection = new SqlConnection(conn))
+            using (connection)
             {
                 try
                 {
@@ -320,15 +432,33 @@ namespace AzureSQL
         /// <param name="tablename"></param>
         public void InitalTable(string tablename)
         {
-            using (SqlConnection connection = new SqlConnection(connectionStr))
+            var provider = new ActiveDirectoryAuthProvider();
+            System.Data.SqlClient.SqlAuthenticationProvider.SetProvider(
+                System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive,
+                //SC.SqlAuthenticationMethod.ActiveDirectoryIntegrated,  // Alternatives.
+                //SC.SqlAuthenticationMethod.ActiveDirectoryPassword,
+                provider);
+            System.Data.SqlClient.SqlConnectionStringBuilder builder = new System.Data.SqlClient.SqlConnectionStringBuilder();
+            builder["Data Source"] = "cnvizn.database.chinacloudapi.cn";
+
+            builder.UserID = "weview@weview.partner.onmschina.cn";
+            builder["Initial Catalog"] = "cnvizn";
+
+            // This "Password" is not used with .ActiveDirectoryInteractive.
+            //builder["Password"] = "<YOUR PASSWORD HERE>";
+
+            builder["Connect Timeout"] = 15;
+            builder["TrustServerCertificate"] = true;
+            builder.Pooling = false;
+            // Assigned enum value must match the enum given to .SetProvider().
+            builder.Authentication = System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive;
+            using (System.Data.SqlClient.SqlConnection connection = new System.Data.SqlClient.SqlConnection(builder.ConnectionString))
             {
                 try
                 {
                     connection.Open();
                     if (connection.State == ConnectionState.Open)
                     {
-                        this.toolStripStatusLabel1.Text = "本地数据库连接成功！";
-                        this.toolStripStatusLabel1.ForeColor = Color.Green;
                         //查询表
                         //string strCommand = "SELECT * FROM [dbo].[EsuValues] where Esu_Id=" + this.comboBox3.Text + " AND datediff(day, [Timestamp],'" + this.dateTimePicker1.Value.ToString("yyyy-MM-dd") + "')= 0 order by [Timestamp] ASC";
                         string strCommand = "SELECT * FROM " + tablename;
@@ -352,8 +482,6 @@ namespace AzureSQL
                     }
                     else
                     {
-                        this.toolStripStatusLabel1.Text = "本地数据库未连接！" + connection.State.ToString();
-                        this.toolStripStatusLabel1.ForeColor = Color.Red;
                         LogWarning("本地数据库未连接！" + connection.State.ToString());
                     }
                 }
@@ -369,11 +497,13 @@ namespace AzureSQL
                             "Procedure: " + exp.Errors[i].Procedure + "\n");
                     }
                     MessageBox.Show(errorMessages.ToString());
-                    this.toolStripStatusLabel1.Text = "本地数据库连接失败！";
-                    this.toolStripStatusLabel1.ForeColor = Color.Red;
                     LogError("本地数据库连接失败！" + errorMessages.ToString());
                 }
             }
+            this.BeginInvoke(new Action(() =>
+            {
+                ///todo
+            }));
         }
         /// <summary>
         /// 数据库查询返回表
@@ -385,22 +515,44 @@ namespace AzureSQL
         {
             DataTable res;
             string conn = null, localstr = "";
+            SqlConnection connection = null;
             ToolStripStatusLabel toolstripstatuslabel = null;
             if (localorRemote == 0)
             {
                 //本地
                 conn = connectionLocalStr;
+                connection = new SqlConnection(conn);
                 localstr = "本地数据库";
                 toolstripstatuslabel = toolStripStatusLabel3;
             }
             else
             {
                 //远程
-                conn = connectionStr;
                 localstr = "远程数据库";
                 toolstripstatuslabel = toolStripStatusLabel1;
+                var provider = new ActiveDirectoryAuthProvider();
+                System.Data.SqlClient.SqlAuthenticationProvider.SetProvider(
+                    System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive,
+                    //SC.SqlAuthenticationMethod.ActiveDirectoryIntegrated,  // Alternatives.
+                    //SC.SqlAuthenticationMethod.ActiveDirectoryPassword,
+                    provider);
+                System.Data.SqlClient.SqlConnectionStringBuilder builder = new System.Data.SqlClient.SqlConnectionStringBuilder();
+                builder["Data Source"] = "cnvizn.database.chinacloudapi.cn";
+
+                builder.UserID = "weview@weview.partner.onmschina.cn";
+                builder["Initial Catalog"] = "cnvizn";
+
+                // This "Password" is not used with .ActiveDirectoryInteractive.
+                //builder["Password"] = "<YOUR PASSWORD HERE>";
+
+                builder["Connect Timeout"] = 15;
+                builder["TrustServerCertificate"] = true;
+                builder.Pooling = false;
+                // Assigned enum value must match the enum given to .SetProvider().
+                builder.Authentication = System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive;
+                connection = new System.Data.SqlClient.SqlConnection(builder.ConnectionString);
             }
-            using (SqlConnection connection = new SqlConnection(conn))
+            using (connection)
             {
                 try
                 {
@@ -408,7 +560,6 @@ namespace AzureSQL
                     if (connection.State == ConnectionState.Open)
                     {
                         toolstripstatuslabel.Text = localstr + "连接成功！";
-                        toolstripstatuslabel.ForeColor = Color.Green;
                         toolstripstatuslabel.Image = Properties.Resources.center1;
                         string strCommand = sql;
                         SqlCommand cmd = new SqlCommand(strCommand, connection);
@@ -497,7 +648,7 @@ namespace AzureSQL
 
             */
             this.chart1.Series[n].ChartType = SeriesChartType.FastLine; //图类型(折线)
-            this.chart1.Series[n].BorderWidth = 1;
+            this.chart1.Series[n].BorderWidth = 2;
             this.chart1.Series[n].Points.DataBindXY(x, y); //添加数据
                                                            //Legend currentLegend = this.chart1.Legends.FindByName(this.chart1.Series[n].Legend);
                                                            //  LegendItem newItem = new LegendItem();
@@ -635,7 +786,7 @@ namespace AzureSQL
         public void LogError(string text)
         {
             LogAppendDelegate la = new LogAppendDelegate(LogAppend);
-            this.richTextBox1.Invoke(la, Color.Red, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Error:" + text);
+            this.richTextBox1.BeginInvoke(la, Color.Red, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Error:" + text);
         }
         /// <summary> 
         /// 显示警告信息 
@@ -644,7 +795,7 @@ namespace AzureSQL
         public void LogWarning(string text)
         {
             LogAppendDelegate la = new LogAppendDelegate(LogAppend);
-            this.richTextBox1.Invoke(la, Color.Yellow, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Warning:" + text);
+            this.richTextBox1.BeginInvoke(la, Color.Yellow, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Warning:" + text);
         }
         /// <summary> 
         /// 显示信息 
@@ -653,7 +804,7 @@ namespace AzureSQL
         public void LogMessage(string text)
         {
             LogAppendDelegate la = new LogAppendDelegate(LogAppend);
-            this.richTextBox1.Invoke(la, Color.LightGray, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Message:" + text);
+            this.richTextBox1.BeginInvoke(la, Color.LightGray, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + " Message:" + text);
         }
         #endregion
         //生成图片
@@ -728,6 +879,7 @@ namespace AzureSQL
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            this.splitContainer1.Panel2Collapsed = true;
             //string datestring = this.dateTimePicker1.Value.ToShortDateString();
             // MessageBox.Show(datestring);
             LogMessage("打开软件");
@@ -735,6 +887,7 @@ namespace AzureSQL
             this.toolStripStatusLabel3.Text = "本地数据库连接中...";
             this.button15.Enabled = false;
             Task t1 = Task.Factory.StartNew(() => connected(1));
+            timer1.Start();
             //判断本地sql服务是否开启
             ServiceController scSQL = new ServiceController();
             scSQL.MachineName = "DESKTOP-6PELLNP";
@@ -747,18 +900,20 @@ namespace AzureSQL
                     scSQL.WaitForStatus(ServiceControllerStatus.Running);
                     this.toolStripStatusLabel3.Text = scSQL.ServiceName + "服务开启成功";
                     Task t2 = Task.Factory.StartNew(() => connected(0));
+                    timer2.Start();
                 }
                 catch (InvalidOperationException)
                 {
                     MessageBox.Show("不能启动该服务！");
-                }  
+                }
             }
             else
             {
                 this.toolStripStatusLabel3.Text = scSQL.ServiceName + "服务已经开启";
                 Task t2 = Task.Factory.StartNew(() => connected(0));
+                timer2.Start();
             }
-           
+
             /*
                         using (SqlConnection connection = new SqlConnection(connectionStr))
                         {
@@ -832,17 +987,18 @@ namespace AzureSQL
             for (int i = 1; i <= 12; i++)
             {
                 Fnode.Nodes.Add("Stack_" + i.ToString());
-                Fnode.Nodes[i-1].ImageIndex = 1;
+                Fnode.Nodes[i - 1].ImageIndex = 1;
                 for (int j = 1; j <= 30; j++)
                 {
                     Fnode.Nodes[i - 1].Nodes.Add("Cell_" + j.ToString());
-                    Fnode.Nodes[i-1].Nodes[j - 1].ImageIndex = 2;
+                    Fnode.Nodes[i - 1].Nodes[j - 1].ImageIndex = 2;
                 }
             }
             //初始化chart
             chart_init(this.chart1);
             chart_init(this.chart2);
             chart_init(this.chart3);
+            chart_init(this.chart16);
         }
 
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -1226,12 +1382,12 @@ namespace AzureSQL
             if (this.radioButton1.Checked)
             {
                 //本地
-                ;
+                connected(0);
             }
             else
             {
                 //远程
-                ;
+                connected(1);
             }
         }
 
@@ -1315,7 +1471,7 @@ namespace AzureSQL
         }
 
 
-       // 查询(a-b)电压
+        // 查询(a-b)电压
         private void button12_Click(object sender, EventArgs e)
         {
             /// string querysql = "SELECT * FROM [dbo].[StackValues] where Stack_Id=" + this.comboBox4.Text + " AND  ([Timestamp] between '" + this.dateTimePicker2.Value.ToString("yyyy-MM-dd") + "' and '" + this.dateTimePicker3.Value.ToString("yyyy-MM-dd") + "') order by [Timestamp] ASC";
@@ -1378,7 +1534,7 @@ namespace AzureSQL
                 }
                 if (System.IO.File.Exists("log"))
                 {
-                    this.Invoke(new Action(() => {
+                    this.BeginInvoke(new Action(() => {
                         genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                     }));
                 }
@@ -1386,7 +1542,7 @@ namespace AzureSQL
                 {
                     //不存在文件
                     Directory.CreateDirectory("log");//创建该文件
-                    this.Invoke(new Action(() => {
+                    this.BeginInvoke(new Action(() => {
                         genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                     }));
                 }
@@ -1449,7 +1605,7 @@ namespace AzureSQL
                 }
                 if (System.IO.File.Exists("log"))
                 {
-                    this.Invoke(new Action(() => {
+                    this.BeginInvoke(new Action(() => {
                         genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                     }));
                 }
@@ -1457,7 +1613,7 @@ namespace AzureSQL
                 {
                     //不存在文件
                     Directory.CreateDirectory("log");//创建该文件
-                    this.Invoke(new Action(() => {
+                    this.BeginInvoke(new Action(() => {
                         genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                     }));
                 }
@@ -1470,17 +1626,18 @@ namespace AzureSQL
             //查找需要更新的数量
             //本地表最大ID
             string sql = "select max(ID)from [dbo].[StackValues];";
-            DataTable dt = null; 
+            DataTable dt = null;
             dt = DataQueryTable(0, sql);
 
 
             //MessageBox.Show(dt.Rows[0][0].ToString());
             int localMaxID = Convert.ToInt32(dt.Rows[0][0]);
-            MessageBox.Show(localMaxID.ToString());
+            //MessageBox.Show("local max ID:"+localMaxID.ToString());
             //远程最大ID
             dt = DataQueryTable(1, sql);
 
             int remoteMaxID = Convert.ToInt32(dt.Rows[0][0]);
+            MessageBox.Show("local max ID:" + localMaxID.ToString() + "\n remote max ID:" + remoteMaxID.ToString());
             //查询数据
             sql = "select * from [dbo].[StackValues] where ID>" + localMaxID;
             dt = DataQueryTable(1, sql);
@@ -1488,19 +1645,21 @@ namespace AzureSQL
             //fill local
             DialogResult result =
             MessageBox.Show("确定更新" + dt.Rows.Count.ToString() + "条记录吗？", "更新", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            LogMessage("<更新> 找到"+ dt.Rows.Count.ToString() + "条记录需要更新");
+            LogMessage("<更新> 找到" + dt.Rows.Count.ToString() + "条记录需要更新");
             if (result == DialogResult.Yes)
             {
                 Task t1 = Task.Factory.StartNew(() => {
-                SqlBulkCopyInsert(connectionLocalStr, "dbo.StackValues", dt);
-                MessageBox.Show("更新完毕");
-                LogMessage("<更新> 更新了" + dt.Rows.Count.ToString() + "条记录");
-                this.Invoke(new Action(()=>{ this.button15.Enabled = true; }));
+                    SqlBulkCopyInsert(connectionLocalStr, "dbo.StackValues", dt);
+                    MessageBox.Show("更新完毕");
+                    LogMessage("<更新> 更新了" + dt.Rows.Count.ToString() + "条记录");
+                    this.BeginInvoke(new Action(() => { this.button15.Enabled = true; }));
                 });
             }
-            else {
+            else
+            {
                 this.button15.Enabled = true;
-                return; }
+                return;
+            }
         }
 
         private void chart1_MouseMove(object sender, MouseEventArgs e)
@@ -1516,20 +1675,41 @@ namespace AzureSQL
                 this.chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
                 this.chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
                 //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
-                /*
-                var pos = e.Location;
-                var results = chart1.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint);
-                foreach (var result in results)
+                if (this.checkBox2.Checked)
                 {
-                    if (result.ChartElementType == ChartElementType.DataPoint)
+                    HitTestResult myTestResult = chart1.HitTest(e.X, e.Y, ChartElementType.DataPoint);//获取命中测试的结果
+                    if (myTestResult.ChartElementType == ChartElementType.DataPoint)
                     {
-                        //  result.
-                        var xVal = result.PointIndex;
-                        var yVal = this.chart1.Series[0].Points[xVal].YValues[0];
-                        this.label2.Text = string.Format("{0},{1}", DateTime.FromOADate(this.chart1.Series[0].Points[xVal].XValue), yVal);
+                        string showtext = "";
+                        try
+                        {
+                            int i = myTestResult.PointIndex;
+                            //时间
+                            for (int j = 0; j < chart1.Series.Count; j++)
+                            {
+                                if (chart1.Series[j].Enabled)
+                                {
+                                    if (chart1.Series[j].Points.Count > 0)
+                                    {
+                                        DataPoint dp1 = chart1.Series[j].Points[i];
+                                        showtext += chart1.Series[j].Name + ":" + dp1.YValues[0] + "\n";
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception exp)
+                        {
+                            // MessageBox.Show(myTestResult.PointIndex.ToString()+ " " +exp.ToString()); 
+                        }
+                        toolTip.SetToolTip(this.chart1, showtext);
                     }
                 }
-                */
+
+
+
+                // toolTip.SetToolTip(this.chart1, showtext);
+                // toolTip.Show(showtext, this.FormObjects.Win32Window, e.x + r.Left, e.y + r.Top);
+                //this.label11.Text = "x:"+e.X.ToString()+"y:"+e.Y.ToString();
             }
             else
             {
@@ -1617,7 +1797,7 @@ namespace AzureSQL
             }
             if (System.IO.File.Exists("log"))
             {
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                 }));
             }
@@ -1625,7 +1805,7 @@ namespace AzureSQL
             {
                 //不存在文件
                 Directory.CreateDirectory("log");//创建该文件
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                 }));
             }
@@ -1685,7 +1865,7 @@ namespace AzureSQL
             }
             if (System.IO.File.Exists("log"))
             {
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                 }));
             }
@@ -1693,7 +1873,7 @@ namespace AzureSQL
             {
                 //不存在文件
                 Directory.CreateDirectory("log");//创建该文件
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart1, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart1.Titles[0].Text);
                 }));
             }
@@ -1703,13 +1883,13 @@ namespace AzureSQL
         {
             this.label9.Text = this.treeView1.SelectedNode.FullPath;
             TreeNode Fnode = this.treeView1.Nodes[0];
-            Fnode.BackColor = Color.FromArgb(230, 230, 230);
+            Fnode.BackColor = Color.Gray;
             for (int i = 0; i < 12; i++)
             {
-                Fnode.Nodes[i].BackColor = Color.FromArgb(230, 230, 230);
+                Fnode.Nodes[i].BackColor = Color.Gray;
                 for (int j = 0; j < 30; j++)
                 {
-                    Fnode.Nodes[i].Nodes[j].BackColor = Color.FromArgb(230, 230, 230);
+                    Fnode.Nodes[i].Nodes[j].BackColor = Color.Gray;
                     // this.treeView1.Nodes[0].BackColor = Color.White;
                 }
             }
@@ -1972,18 +2152,18 @@ namespace AzureSQL
         private void treeView1_Leave(object sender, EventArgs e)
         {
             TreeNode Fnode = this.treeView1.Nodes[0];
-            Fnode.BackColor = Color.FromArgb(230,230,230);
+            Fnode.BackColor = Color.Gray;
             for (int i = 0; i < 12; i++)
             {
-                Fnode.Nodes[i].BackColor = Color.FromArgb(230, 230, 230);
+                Fnode.Nodes[i].BackColor = Color.Gray;
                 for (int j = 0; j < 30; j++)
                 {
-                    Fnode.Nodes[i].Nodes[j].BackColor = Color.FromArgb(230, 230, 230);
+                    Fnode.Nodes[i].Nodes[j].BackColor = Color.Gray;
                     // this.treeView1.Nodes[0].BackColor = Color.White;
                 }
             }
             if (this.treeView1.SelectedNode != null)
-                this.treeView1.SelectedNode.BackColor = Color.CornflowerBlue;
+                this.treeView1.SelectedNode.BackColor = Color.DodgerBlue;
         }
 
         private void button16_Click_1(object sender, EventArgs e)
@@ -2041,7 +2221,7 @@ namespace AzureSQL
             }
             if (System.IO.File.Exists("log"))
             {
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
                 }));
             }
@@ -2049,7 +2229,7 @@ namespace AzureSQL
             {
                 //不存在文件
                 Directory.CreateDirectory("log");//创建该文件
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
                 }));
             }
@@ -2110,7 +2290,7 @@ namespace AzureSQL
             }
             if (System.IO.File.Exists("log"))
             {
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
                 }));
             }
@@ -2118,7 +2298,7 @@ namespace AzureSQL
             {
                 //不存在文件
                 Directory.CreateDirectory("log");//创建该文件
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart2, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart2.Titles[0].Text);
                 }));
             }
@@ -2179,7 +2359,7 @@ namespace AzureSQL
             }
             if (System.IO.Directory.Exists("log"))
             {
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
                 }));
             }
@@ -2187,7 +2367,7 @@ namespace AzureSQL
             {
                 //不存在文件
                 Directory.CreateDirectory("log");//创建该文件
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
                 }));
             }
@@ -2207,7 +2387,7 @@ namespace AzureSQL
                 this.chart3.ChartAreas[0].CursorY.SetCursorPixelPosition(new PointF(_currentPointX, _currentPointY), true);
                 //this.label2.Text = string.Format("{0},{1}", _currentPointX, _currentPointY);
             }
-            else 
+            else
             {
                 this.chart3.ChartAreas[0].CursorX.IsUserEnabled = false;
                 this.chart3.ChartAreas[0].CursorY.IsUserEnabled = false;
@@ -2273,7 +2453,7 @@ namespace AzureSQL
             }
             if (System.IO.Directory.Exists("log"))
             {
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
                 }));
             }
@@ -2281,9 +2461,9 @@ namespace AzureSQL
             {
                 //不存在文件
                 Directory.CreateDirectory("log");//创建该文件
-                this.Invoke(new Action(() => {
+                this.BeginInvoke(new Action(() => {
                     genpic(this.chart3, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + this.chart3.Titles[0].Text);
-                   // MessageBox.Show("创建log文件，截图成功");
+                    // MessageBox.Show("创建log文件，截图成功");
                 }));
             }
         }
@@ -2295,13 +2475,13 @@ namespace AzureSQL
 
         private void 保存图像ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string whichcontrol_name =contextMenuStrip1.SourceControl.Name.Trim();
-            Chart chart = (Chart)this.tabControl1.Controls.Find(whichcontrol_name,true)[0];
+            string whichcontrol_name = contextMenuStrip1.SourceControl.Name.Trim();
+            Chart chart = (Chart)this.tabControl1.Controls.Find(whichcontrol_name, true)[0];
             if (chart.Series.Count > 0)
             {
                 if (System.IO.Directory.Exists("log"))
                 {
-                    this.Invoke(new Action(() => {
+                    this.BeginInvoke(new Action(() => {
                         genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
                         MessageBox.Show("截图成功");
                     }));
@@ -2310,13 +2490,13 @@ namespace AzureSQL
                 {
                     //不存在文件
                     Directory.CreateDirectory("log");//创建该文件
-                    this.Invoke(new Action(() => {
+                    this.BeginInvoke(new Action(() => {
                         genpic(chart, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + chart.Titles[0].Text);
                         MessageBox.Show("创建log文件，截图成功");
                     }));
                 }
             }
-           
+
         }
 
         private void 还原toolStripMenuItem1_Click(object sender, EventArgs e)
@@ -2336,41 +2516,39 @@ namespace AzureSQL
             string sql = "select max(ID)from [dbo].[StackValues];";
             DataTable dt = null;
             int localMaxID = 0;
-           Task t2 = Task.Factory.StartNew(() => {
+            Task t2 = Task.Factory.StartNew(() => {
                 dt = DataQueryTable(0, sql);
-               //MessageBox.Show(dt.Rows[0][0].ToString());
-               this.Invoke(new Action(()=> {
-                   localMaxID = Convert.ToInt32(dt.Rows[0][0]);
-                   //MessageBox.Show(localMaxID.ToString());
-                   for(int i=0;i<9000000;i++)
-                   { string a = ""; a=a+i.ToString(); }
-                   this.button21.Text = localMaxID.ToString();
-                   MessageBox.Show(localMaxID.ToString());
-               }));
-               
+                //MessageBox.Show(dt.Rows[0][0].ToString());
+                this.BeginInvoke(new Action(() => {
+                    localMaxID = Convert.ToInt32(dt.Rows[0][0]);
+                    //MessageBox.Show(localMaxID.ToString());
+                    for (int i = 0; i < 9000000; i++)
+                    { string a = ""; a = a + i.ToString(); }
+                    this.button21.Text = localMaxID.ToString();
+                    MessageBox.Show(localMaxID.ToString());
+                }));
+
             }
-            );
+             );
 
 
 
         }
 
-   
+
         private void button1_Click_1(object sender, EventArgs e)
         {
             if (this.pwdbox.Visible && this.pwdbtn.Visible)
             {
                 this.pwdbox.Visible = false;
                 this.pwdbtn.Visible = false;
-                this.button1.BackColor = Color.DarkGray;
             }
             else
             {
                 this.pwdbox.Visible = true;
                 this.pwdbtn.Visible = true;
-                this.button1.BackColor = Color.DodgerBlue;
             }
-            
+
         }
 
         private void pwdbtn_Click(object sender, EventArgs e)
@@ -2381,6 +2559,7 @@ namespace AzureSQL
                 this.pwdbox.Text = null;
                 this.pwdbox.Visible = false;
                 this.pwdbtn.Visible = false;
+                this.button1.BackColor = Color.FromArgb(40, 40, 40);
             }
             else
             {
@@ -2395,11 +2574,14 @@ namespace AzureSQL
             this.pwdbox.Visible = false;
             this.pwdbox.Text = null;
             this.pwdbtn.Visible = false;
+            this.button1.BackColor = Color.FromArgb(64, 64, 64);
+            this.tabControl1.Refresh();//刷新界面
+
         }
 
         private void closebtn_Click(object sender, EventArgs e)
         {
-            this.Dispose();
+            Application.Exit();
         }
 
         private void minbtn_Click(object sender, EventArgs e)
@@ -2412,24 +2594,26 @@ namespace AzureSQL
             if (this.WindowState == FormWindowState.Maximized)
             {
                 this.WindowState = FormWindowState.Normal;
+                this.maxbtn.Text = "◻";
             }
             else
             {
                 this.FormBorderStyle = FormBorderStyle.None;
                 this.MaximumSize = new Size(Screen.PrimaryScreen.WorkingArea.Width, Screen.PrimaryScreen.WorkingArea.Height);
                 this.WindowState = FormWindowState.Maximized;
+                this.maxbtn.Text = "◱";
             }
         }
 
 
         #region 无边框拖动效果
         [DllImport("user32.dll")]//拖动无窗体的控件
-        public static extern bool ReleaseCapture();
+        private extern static void ReleaseCapture();
         [DllImport("user32.dll")]
-        public static extern bool SendMessage(IntPtr hwnd, int wMsg, int wParam, int lParam);
-        public const int WM_SYSCOMMAND = 0x0112;
-        public const int SC_MOVE = 0xF010;
-        public const int HTCAPTION = 0x0002;
+        private extern static void SendMessage(IntPtr hwnd, int wMsg, int wParam, int lParam);
+        private const int WM_SYSCOMMAND = 0x0112;
+        private const int SC_MOVE = 0xF010;
+        private const int HTCAPTION = 0x0002;
 
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -2439,55 +2623,958 @@ namespace AzureSQL
         }
         #endregion
 
-        private void button1_MouseEnter(object sender, EventArgs e)
+        //FormBorderStyle.None时，支持改变窗体大小
+        #region 支持改变窗体大小
+        private const int Guying_HTLEFT = 10;
+        private const int Guying_HTRIGHT = 11;
+        private const int Guying_HTTOP = 12;
+        private const int Guying_HTTOPLEFT = 13;
+        private const int Guying_HTTOPRIGHT = 14;
+        private const int Guying_HTBOTTOM = 15;
+        private const int Guying_HTBOTTOMLEFT = 0x10;
+        private const int Guying_HTBOTTOMRIGHT = 17;
+
+
+        protected override void WndProc(ref Message m)
         {
-            this.button1.BackColor = Color.DodgerBlue;
+            switch (m.Msg)
+            {
+                case 0x0084:
+                    base.WndProc(ref m);
+                    Point vPoint = new Point((int)m.LParam & 0xFFFF, (int)m.LParam >> 16 & 0xFFFF);
+                    vPoint = PointToClient(vPoint);
+                    if (vPoint.X <= 5)
+                        if (vPoint.Y <= 5)
+                            m.Result = (IntPtr)Guying_HTTOPLEFT;
+                        else if (vPoint.Y >= ClientSize.Height - 5)
+                            m.Result = (IntPtr)Guying_HTBOTTOMLEFT;
+                        else
+                            m.Result = (IntPtr)Guying_HTLEFT;
+                    else if (vPoint.X >= ClientSize.Width - 5)
+                        if (vPoint.Y <= 5)
+                            m.Result = (IntPtr)Guying_HTTOPRIGHT;
+                        else if (vPoint.Y >= ClientSize.Height - 5)
+                            m.Result = (IntPtr)Guying_HTBOTTOMRIGHT;
+                        else
+                            m.Result = (IntPtr)Guying_HTRIGHT;
+                    else if (vPoint.Y <= 5)
+                        m.Result = (IntPtr)Guying_HTTOP;
+                    else if (vPoint.Y >= ClientSize.Height - 5)
+                        m.Result = (IntPtr)Guying_HTBOTTOM;
+                    break;
+                case 0x0201://鼠标左键按下的消息
+                    m.Msg = 0x00A1;//更改消息为非客户区按下鼠标
+                    m.LParam = IntPtr.Zero; //默认值
+                    m.WParam = new IntPtr(2);//鼠标放在标题栏内
+                    base.WndProc(ref m);
+                    break;
+                default:
+                    base.WndProc(ref m);
+                    break;
+            }
         }
 
-        private void button1_MouseLeave(object sender, EventArgs e)
+        #endregion
+
+        private void button6_Click_1(object sender, EventArgs e)
         {
-            this.button1.BackColor = Color.DarkGray;
+            if (this.splitContainer1.Panel2Collapsed)
+            {
+                this.splitContainer1.Panel2Collapsed = false;
+                this.button6.ForeColor = Color.DodgerBlue;
+            }
+            else
+            {
+                this.splitContainer1.Panel2Collapsed = true;
+                this.button6.ForeColor = Color.White;
+
+            }
         }
 
-        private void button14_MouseEnter(object sender, EventArgs e)
+        private void tabControl1_DrawItem(object sender, DrawItemEventArgs e)
         {
-            this.button14.BackColor = Color.DodgerBlue;
+
+
+            //获取TabControl主控件的工作区域
+            Rectangle rec = tabControl1.ClientRectangle;
+
+            //标签背景填充颜色
+            SolidBrush BackBrush = new SolidBrush(Color.Gray);
+            SolidBrush BackBrush1 = new SolidBrush(Color.DarkGray);
+            //标签背景色
+            e.Graphics.FillRectangle(BackBrush, 0, 0, tabControl1.Width, tabControl1.Height);
+            //e.Graphics.DrawString(tabControl1.Name, new Font("宋体", 9), BackBrus1, tabControl1.Width, tabControl1.Height);
+            //标签文字填充颜色
+            SolidBrush FrontBrush = new SolidBrush(Color.White);
+            SolidBrush FrontBrush0 = new SolidBrush(Color.WhiteSmoke);
+            StringFormat StringF = new StringFormat();
+            //设置文字对齐方式
+            StringF.Alignment = StringAlignment.Center;
+            StringF.LineAlignment = StringAlignment.Center;
+
+            for (int i = 0; i < tabControl1.TabPages.Count; i++)
+            {
+                //获取标签头工作区域
+                Rectangle Rec = tabControl1.GetTabRect(i);
+                //绘制标签头背景颜色
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(115, 115, 115)), Rec);
+                //绘制标签头文字
+                e.Graphics.DrawString(tabControl1.TabPages[i].Text, new Font("宋体", 8), FrontBrush0, Rec, StringF);
+                //e.Graphics.DrawString(((TabControl)sender).TabPages[e.Index].Text,System.Windows.Forms.SystemInformation.MenuFont, new SolidBrush(Color.WhiteSmoke), e.Bounds, StringF);
+            }
+
+            if (e.Index == tabControl1.SelectedIndex)
+            {
+                e.Graphics.FillRectangle(Brushes.DimGray, e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
+                //tabControl1.GetTabRect(e.Index).Inflate(4, 4);
+                e.Graphics.DrawString(tabControl1.TabPages[e.Index].Text, new Font("宋体", 9), FrontBrush, tabControl1.GetTabRect(e.Index), StringF);
+                //e.Graphics.FillRectangle(Brushes.Gray, e.Bounds.X-4, e.Bounds.Y-4, e.Bounds.Width+4, e.Bounds.Height+4);
+            }
+            else
+            {
+                e.Graphics.FillRectangle(Brushes.Black, e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
+            }
+
+
         }
 
-        private void button14_MouseLeave(object sender, EventArgs e)
+        private void chart3_MouseEnter(object sender, EventArgs e)
         {
-            this.button14.BackColor = Color.Gray;
+            this.chart3.BorderlineWidth = 1;
         }
 
-        private void button2_MouseEnter(object sender, EventArgs e)
+        private void chart3_MouseLeave(object sender, EventArgs e)
         {
-            this.button2.BackColor = Color.DodgerBlue;
+            this.chart3.BorderlineWidth = 0;
         }
 
-        private void button2_MouseLeave(object sender, EventArgs e)
+        private void chart1_MouseEnter(object sender, EventArgs e)
         {
-            this.button2.BackColor = Color.Gray;
+            this.chart1.BorderlineWidth = 1;
         }
 
-        private void button13_MouseEnter(object sender, EventArgs e)
+        private void chart1_MouseLeave(object sender, EventArgs e)
         {
-
-            this.button13.BackColor = Color.DodgerBlue;
+            this.chart1.BorderlineWidth = 0;
         }
 
-        private void button13_MouseLeave(object sender, EventArgs e)
+        private void chart2_MouseEnter(object sender, EventArgs e)
         {
-            this.button13.BackColor = Color.Gray;
+            this.chart2.BorderlineWidth = 1;
         }
 
-        private void button18_MouseEnter(object sender, EventArgs e)
+        private void chart2_MouseLeave(object sender, EventArgs e)
         {
-            this.button18.BackColor = Color.DodgerBlue;
+            this.chart2.BorderlineWidth = 0;
         }
 
-        private void button18_MouseLeave(object sender, EventArgs e)
+        private void timer1_Tick(object sender, EventArgs e)
         {
-            this.button18.BackColor = Color.Gray;
+            if (this.toolStripStatusLabel1.Text == "远程数据库连接中...")
+            {
+                this.toolStripStatusLabel1.Text = "远程数据库连接中.  ";
+
+            }
+            else if (this.toolStripStatusLabel1.Text == "远程数据库连接中.. ")
+            {
+                this.toolStripStatusLabel1.Text = "远程数据库连接中...";
+            }
+            else if (this.toolStripStatusLabel1.Text == "远程数据库连接中.  ")
+            {
+                this.toolStripStatusLabel1.Text = "远程数据库连接中.. ";
+            }
+            //timer1.Stop();
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            if (this.toolStripStatusLabel3.Text == "本地数据库连接中...")
+            {
+                this.toolStripStatusLabel3.Text = "本地数据库连接中.  ";
+            }
+            else if (this.toolStripStatusLabel3.Text == "本地数据库连接中.. ")
+            {
+                this.toolStripStatusLabel3.Text = "本地数据库连接中...";
+            }
+            else if (this.toolStripStatusLabel3.Text == "本地数据库连接中.  ")
+            {
+                this.toolStripStatusLabel3.Text = "本地数据库连接中.. ";
+            }
+        }
+
+        private void button7_Click_1(object sender, EventArgs e)
+        {
+
+            ;
+        }
+
+        public void drawLine(Chart chart, int n, string linename, List<DateTime> x, List<double> y, string showunite,int color = 0)
+        {
+            //LogMessage("在chart1系列" + n.ToString() + ",绘制曲线：" + linename);
+            chart.Series.Clear();
+
+            chart.Series.Add(new Series(linename)); //添加一个图表序列
+                                                    // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
+            chart.Series[n].XValueType = ChartValueType.DateTime;
+            chart.Series[n].Label = "#VAL"; //设置显示X Y的值 
+            chart.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm} \r#VAL"+ showunite; //鼠标移动到对应点显示数值
+            chart.Series[n].ChartArea = chart.ChartAreas[0].Name; //设置图表背景框ChartArea 
+
+            chart.Series[n].IsValueShownAsLabel = false;
+            chart.Series[n].SmartLabelStyle.Enabled = false;
+            chart.Series[n].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.No;
+
+            chart.Series[n].ChartType = SeriesChartType.FastLine; //图类型(折线)
+            chart.Series[n].BorderWidth = 2;
+
+            if (color == 0)
+            {
+                chart.Series[n].Color = Color.DodgerBlue;
+            }
+            else if (color == 1)
+            {
+                chart.Series[n].Color = Color.GreenYellow;
+            }
+            else if (color == 2)
+            {
+                chart.Series[n].Color = Color.Red;
+            }
+
+
+            //x区域放大
+            chart.ChartAreas[0].CursorX.IsUserEnabled = true;
+            chart.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+            chart.ChartAreas[0].CursorX.Interval = 0;
+            chart.ChartAreas[0].CursorX.IntervalOffset = 0;
+            chart.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
+            //Y区域放大
+            chart.ChartAreas[0].CursorY.IsUserEnabled = true;
+            chart.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
+
+            chart.Series[n].Points.DataBindXY(x, y); //添加数据
+
+        }
+
+
+        public void drawLine_volt_s(Chart chart, int n, string linename, List<DateTime> x, List<double> y , int color=0)
+        {
+            //LogMessage("在chart1系列" + n.ToString() + ",绘制曲线：" + linename);
+            chart.Series.Clear();
+
+            chart.Series.Add(new Series(linename)); //添加一个图表序列
+                                                    // ct.Series[0].XValueType = ChartValueType.String; //设置X轴上的值类型
+            chart.Series[n].XValueType = ChartValueType.DateTime;
+            chart.Series[n].Label = "#VAL"; //设置显示X Y的值 
+            //chart.Series[n].ToolTip = linename + "\r#VALX{yyyy-MM-dd HH:mm} \r#VALV"; //鼠标移动到对应点显示数值
+            chart.Series[n].ChartArea = chart.ChartAreas[0].Name; //设置图表背景框ChartArea 
+
+            chart.Series[n].IsValueShownAsLabel = false;
+            chart.Series[n].SmartLabelStyle.Enabled = false;
+            chart.Series[n].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.No;
+
+            chart.Series[n].ChartType = SeriesChartType.FastLine; //图类型(折线)
+            chart.Series[n].BorderWidth = 2;
+
+            if (color == 0)
+            {
+                chart.Series[n].Color = Color.DodgerBlue;
+            }
+            else if (color == 1)
+            {
+                chart.Series[n].Color = Color.GreenYellow;
+            }
+            else if (color ==2)
+            {
+                chart.Series[n].Color = Color.Red;
+            }
+
+
+            //x区域放大
+            chart.ChartAreas[0].CursorX.IsUserEnabled = false;
+            chart.ChartAreas[0].CursorX.IsUserSelectionEnabled = false;
+            chart.ChartAreas[0].CursorX.Interval = 0;
+            chart.ChartAreas[0].CursorX.IntervalOffset = 0;
+            chart.ChartAreas[0].AxisX.ScaleView.Zoomable = false;
+            //Y区域放大
+            chart.ChartAreas[0].CursorY.IsUserEnabled = false;
+            chart.ChartAreas[0].CursorY.IsUserSelectionEnabled = false;
+
+            chart.Series[n].Points.DataBindXY(x, y); //添加数据
+
+        }
+
+        private void button10_Click_1(object sender, EventArgs e)
+        {
+            Chart chart5 = chart4;
+
+            this.Controls.Add(chart5);
+            tabPage4.Controls.Add(chart5);
+            Chart chart6 = chart4;
+            tabPage4.Controls.Add(chart6);
+            Chart chart7 = chart4;
+            tabPage4.Controls.Add(chart7);
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ;
+        }
+
+        //
+        public Tuple<List<DateTime>, List<double>> Xy_data_volt(int startchartnamenum)
+        {
+            string Stack_Id = (startchartnamenum - 3).ToString();
+            //select year(Timestamp) 年,month(Timestamp) 月,day(Timestamp) 日,avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1from StackValuesgroup by year(Timestamp),month(Timestamp),day(Timestamp) order by 年,月,日
+
+            string querysql = @"SELECT 
+CONVERT(varchar(100), concat(year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)), '-', month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)), '-', day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp))), 23),
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+avg(Voltage)
+FROM[dbo].[StackValues]
+WHERE Stack_Id = " + Stack_Id + @"
+GROUP BY
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp))
+ORDER BY
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp));";
+
+            // MessageBox.Show(querysql);
+            DataTable dt = DataQueryTable(0, querysql);
+            if (dt != null)
+            {
+
+                int n = dt.Rows.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+
+                    // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return null;
+                }
+                List<DateTime> x = new List<DateTime>(); List<double> y = new List<double>();
+                for (int i = 0; i < n; i++)
+                {
+                    //add time
+                    x.Add(Convert.ToDateTime(dt.Rows[i][0]));
+                    //  txt += dt.Rows[i][1].ToString();
+                    //add value
+                    y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][4].ToString()), 3));
+
+                }
+                 
+                return new Tuple<List<DateTime>, List<double>>(x, y);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public Tuple<List<DateTime>, List<double>> Xy_data_temp(int startchartnamenum)
+        {
+            string Stack_Id = (startchartnamenum - 3).ToString();
+            //select year(Timestamp) 年,month(Timestamp) 月,day(Timestamp) 日,avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1from StackValuesgroup by year(Timestamp),month(Timestamp),day(Timestamp) order by 年,月,日
+
+            string querysql = @"SELECT 
+CONVERT(varchar(100), concat(year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)), '-', month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)), '-', day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp))), 23),
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+avg(Temperature)
+FROM[dbo].[StackValues]
+WHERE Stack_Id = " + Stack_Id + @"
+GROUP BY
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp))
+ORDER BY
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp));";
+
+            // MessageBox.Show(querysql);
+            DataTable dt = DataQueryTable(0, querysql);
+            if (dt != null)
+            {
+
+                int n = dt.Rows.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+
+                    // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return null;
+                }
+                List<DateTime> x = new List<DateTime>(); List<double> y = new List<double>();
+                for (int i = 0; i < n; i++)
+                {
+                    //add time
+                    x.Add(Convert.ToDateTime(dt.Rows[i][0]));
+                    //  txt += dt.Rows[i][1].ToString();
+                    //add value
+                    y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][4].ToString()), 1));
+
+                }
+
+                return new Tuple<List<DateTime>, List<double>>(x, y);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public Tuple<List<DateTime>, List<double>> Xy_data_soc(int startchartnamenum)
+        {
+            string Stack_Id = (startchartnamenum - 3).ToString();
+            //select year(Timestamp) 年,month(Timestamp) 月,day(Timestamp) 日,avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1，avg(CellVoltages_Cell1) CellVoltages_Cell1from StackValuesgroup by year(Timestamp),month(Timestamp),day(Timestamp) order by 年,月,日
+
+            string querysql = @"SELECT 
+CONVERT(varchar(100), concat(year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)), '-', month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)), '-', day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp))), 23),
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+avg(StateOfCharge)
+FROM[dbo].[StackValues]
+WHERE Stack_Id = " + Stack_Id + @"
+GROUP BY
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp))
+ORDER BY
+year(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+month(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp)),
+day(DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), Timestamp));";
+
+            // MessageBox.Show(querysql);
+            DataTable dt = DataQueryTable(0, querysql);
+            if (dt != null)
+            {
+
+                int n = dt.Rows.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+
+                    // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return null;
+                }
+                List<DateTime> x = new List<DateTime>(); List<double> y = new List<double>();
+                for (int i = 0; i < n; i++)
+                {
+                    //add time
+                    x.Add(Convert.ToDateTime(dt.Rows[i][0]));
+                    //  txt += dt.Rows[i][1].ToString();
+                    //add value
+                    y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][4].ToString()), 1));
+
+                }
+
+                return new Tuple<List<DateTime>, List<double>>(x, y);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="startchartnamenum"></param>
+        public void showDrawLine_volt(Tuple<List<DateTime>, List<double>> tup , int startchartnamenum)
+        {
+            string Stack_Id = (startchartnamenum - 3).ToString();
+            Chart ch = null;
+            if (tup != null)
+            {
+
+                ch = (Chart)this.tabControl1.Controls.Find("chart" + startchartnamenum.ToString(), true)[0];
+                ch.Series.Clear();
+                foreach (var series in ch.Series)
+                {
+                    series.Points.Clear();
+                }
+                // ch.ChartAreas[0].AxisX.Title = "时 间";
+                ch.ChartAreas[0].AxisY.Title = "电 压 V";
+
+                int n = tup.Item1.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+
+                    ch.Titles[0].Text = "";
+
+                   // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return;
+                }
+              
+                // MessageBox.Show(dt.TableName+"_"+n.ToString());
+              //  LogMessage("按钮<Cell电压图> SQL：" + querysql);
+
+                ch.Titles[0].Text = Stack_Id + "#堆栈栈电压历史曲线";
+                ch.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+                ch.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
+                ch.ChartAreas[0].AxisY.LabelStyle.Format = "N1";
+                drawLine_volt_s(ch, 0, "stack" + Stack_Id, tup.Item1, tup.Item2);
+
+                /*
+                if (System.IO.File.Exists("log"))
+                {
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                else
+                {
+                    //不存在文件
+                    Directory.CreateDirectory("log");//创建该文件
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                */
+            }
+        }
+
+        public void showDrawLine_temp(Tuple<List<DateTime>, List<double>> tup, int startchartnamenum)
+        {
+
+            string Stack_Id = (startchartnamenum - 3).ToString();
+
+            Chart ch = null;
+            if (tup != null)
+            {
+
+                ch = (Chart)this.tabControl1.Controls.Find("chart" + startchartnamenum.ToString(), true)[0];
+                ch.Series.Clear();
+                foreach (var series in ch.Series)
+                {
+                    series.Points.Clear();
+                }
+                // ch.ChartAreas[0].AxisX.Title = "时 间";
+                ch.ChartAreas[0].AxisY.Title = "温 度 ℃";
+
+                int n = tup.Item1.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+
+                    ch.Titles[0].Text = "";
+
+                    // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return;
+                }
+
+                // MessageBox.Show(dt.TableName+"_"+n.ToString());
+                //  LogMessage("按钮<Cell电压图> SQL：" + querysql);
+
+                ch.Titles[0].Text = Stack_Id + "#堆栈栈温度历史曲线";
+                ch.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+                ch.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
+                ch.ChartAreas[0].AxisY.LabelStyle.Format = "N1";
+                drawLine_volt_s(ch, 0, "stack" + Stack_Id, tup.Item1, tup.Item2,2);
+
+                /*
+                if (System.IO.File.Exists("log"))
+                {
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                else
+                {
+                    //不存在文件
+                    Directory.CreateDirectory("log");//创建该文件
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                */
+            }
+        }
+
+        public void showDrawLine_soc(Tuple<List<DateTime>, List<double>> tup, int startchartnamenum)
+        {
+
+            string Stack_Id = (startchartnamenum - 3).ToString();
+
+            Chart ch = null;
+            if (tup != null)
+            {
+
+                ch = (Chart)this.tabControl1.Controls.Find("chart" + startchartnamenum.ToString(), true)[0];
+                ch.Series.Clear();
+                foreach (var series in ch.Series)
+                {
+                    series.Points.Clear();
+                }
+                // ch.ChartAreas[0].AxisX.Title = "时 间";
+                ch.ChartAreas[0].AxisY.Title = "S O C %";
+
+                int n = tup.Item1.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+
+                    ch.Titles[0].Text = "";
+
+                    // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return;
+                }
+
+                // MessageBox.Show(dt.TableName+"_"+n.ToString());
+                //  LogMessage("按钮<Cell电压图> SQL：" + querysql);
+
+                ch.Titles[0].Text = Stack_Id + "#堆栈栈SOC历史曲线";
+                ch.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+                ch.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
+                ch.ChartAreas[0].AxisY.LabelStyle.Format = "N1";
+                drawLine_volt_s(ch, 0, "stack" + Stack_Id, tup.Item1, tup.Item2,1);
+
+                /*
+                if (System.IO.File.Exists("log"))
+                {
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                else
+                {
+                    //不存在文件
+                    Directory.CreateDirectory("log");//创建该文件
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                */
+            }
+        }
+
+
+        private void button10_Click_2(object sender, EventArgs e)
+        {
+            //  Stopwatch sw = new Stopwatch();
+            // sw.Start();
+            //耗时程序
+            List<Tuple<List<DateTime>, List<double>>> lt = new List<Tuple<List<DateTime>, List<double>>>();
+            Parallel.For(4, 16, nu =>
+            {
+                // Task.Factory.StartNew(() => 
+                lt.Add(Xy_data_volt(nu));
+                this.BeginInvoke(new Action(() => { showDrawLine_volt(lt[nu - 4], nu); }));
+
+                // );
+
+            });
+            this.label6.Text = "堆栈电压历史曲线";
+            
+            //   sw.Stop();
+            //   TimeSpan ts = sw.Elapsed;
+            //MessageBox.Show(ts.TotalMilliseconds.ToString());
+        }
+
+        private void button11_Click_1(object sender, EventArgs e)
+        {
+            List<Tuple<List<DateTime>, List<double>>> lt = new List<Tuple<List<DateTime>, List<double>>>();
+            Parallel.For(4, 16, nu =>
+            {
+                // Task.Factory.StartNew(() => 
+                lt.Add(Xy_data_temp(nu));
+                this.BeginInvoke(new Action(() => { showDrawLine_temp(lt[nu - 4], nu); }));
+
+                // );
+
+            });
+            this.label6.Text = "堆栈温度历史曲线";
+        }
+
+        private void button12_Click_1(object sender, EventArgs e)
+        {
+            List<Tuple<List<DateTime>, List<double>>> lt = new List<Tuple<List<DateTime>, List<double>>>();
+            Parallel.For(4, 16, nu =>
+            {
+                // Task.Factory.StartNew(() => 
+                lt.Add(Xy_data_soc(nu));
+                this.BeginInvoke(new Action(() => { showDrawLine_soc(lt[nu - 4], nu); }));
+
+                // );
+
+            });
+            this.label6.Text = "堆栈SOC历史曲线";
+        }
+
+        private void chart_MouseEnter(object sender, EventArgs e)
+        {
+            Chart chart = (Chart)sender;
+            chart.BorderlineWidth = 1;
+        }
+
+        private void chart_MouseLeave(object sender, EventArgs e)
+        {
+            Chart chart = (Chart)sender;
+            chart.BorderlineWidth = 0;
+        }
+
+        //默认数据查询返回二维list
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sqltext"></param>
+        /// <param name="colonum">列号</param>
+        /// <param name="acur">精度</param>
+        /// <returns></returns>
+        public Tuple<List<DateTime>, List<double>> Xy_data(string sqltext,int colonum,int acur)
+        {
+            // MessageBox.Show(querysql);
+            DataTable dt = DataQueryTable(0, sqltext);
+            if (dt != null)
+            {
+
+                int n = dt.Rows.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+
+                    // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return null;
+                }
+                List<DateTime> x = new List<DateTime>(); List<double> y = new List<double>();
+                for (int i = 0; i < n; i++)
+                {
+                    //add time
+                    x.Add(Convert.ToDateTime(dt.Rows[i][0]));
+                    //  txt += dt.Rows[i][1].ToString();
+                    //add value
+                    y.Add(Math.Round(Convert.ToDouble(dt.Rows[i][colonum].ToString()), acur));
+
+                }
+
+                return new Tuple<List<DateTime>, List<double>>(x, y);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tup">XY数据</param>
+        /// <param name="chartnamenum">chart名字</param>
+        /// <param name="title">图标题</param>
+        /// <param name="yTitle">Y轴标题</param>
+        /// <param name="acur">数据精度</param>
+        /// <param name="lineName">线名称</param>
+        /// <param name="color">线颜色</param>
+        public void showDrawLine(Tuple<List<DateTime>, List<double>> tup, int chartnamenum,string title,string yTitle,int acur,string lineName,int color,string showunite)
+        {
+            Chart ch = null;
+            if (tup != null)
+            {
+                ch = (Chart)this.tabControl1.Controls.Find("chart" + chartnamenum.ToString(), true)[0];
+                ch.Series.Clear();
+                foreach (var series in ch.Series)
+                {
+                    series.Points.Clear();
+                }
+                // ch.ChartAreas[0].AxisX.Title = "时 间";
+                ch.ChartAreas[0].AxisY.Title = yTitle;//"温 度 ℃";
+
+                int n = tup.Item1.Count;
+                if (n <= 0)
+                {
+                    MessageBox.Show("没有数据");
+                    ch.Titles[0].Text = "";
+                    // LogMessage("按钮<Cell电压图> 没有查到数据。SQL：" + querysql);
+                    return;
+                }
+
+                // MessageBox.Show(dt.TableName+"_"+n.ToString());
+                //  LogMessage("按钮<Cell电压图> SQL：" + querysql);
+
+                ch.Titles[0].Text = title;//Stack_Id + "#堆栈栈温度历史曲线";
+                ch.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);//ZoomReset(0)表示撤销所有放大动作
+                ch.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);//ZoomReset(1)表示撤销上一次放大动作
+                ch.ChartAreas[0].AxisY.LabelStyle.Format = "N"+ acur.ToString();
+                drawLine(ch, 0, lineName, tup.Item1, tup.Item2, showunite, color);
+
+                
+                if (System.IO.File.Exists("log"))
+                {
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                else
+                {
+                    //不存在文件
+                    Directory.CreateDirectory("log");//创建该文件
+                    this.BeginInvoke(new Action(() => {
+                        genpic(ch, "log/" + DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss ") + ch.Titles[0].Text);
+                    }));
+                }
+                
+            }
+        }
+
+
+        private void comboBox4_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (this.comboBox3.SelectedItem.ToString() == "1" || this.comboBox3.SelectedItem.ToString() == "2")
+                {
+                    if (comboBox4.SelectedIndex == 0)//阳极加热器温度
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),AnolyteTank_Heater_ElementTemperature FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 1), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阳极加热器温度曲线", "温 度", 1, "ESU" + this.comboBox3.SelectedItem.ToString(), 2, "℃");
+
+                    }
+                    else if (comboBox4.SelectedIndex == 1)//液体温度
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),AnolyteTank_Heater_BathPrimaryTemperature FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 1), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阳极液温度曲线", "温 度", 1, "ESU" + this.comboBox3.SelectedItem.ToString(), 2, "℃");
+                    }
+                    else if (comboBox4.SelectedIndex == 2)//压力
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),AnolyteTank_Pressure FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 4), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阳极压力曲线", "压 力 PSI", 4, "ESU" + this.comboBox3.SelectedItem.ToString(), 4, "psi");
+
+                    }
+                    else if (comboBox4.SelectedIndex == 3)//  泵速
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),AnolyteTank_PumpSpeed FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 3), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阳极泵速曲线", "泵 速 Hz", 3, "ESU" + this.comboBox3.SelectedItem.ToString(), 3, "Hz");
+
+                    }
+                }
+            }
+            catch (Exception exp)
+            {
+                MessageBox.Show("ESU?");
+            }
+           
+           
+
+
+        }
+
+        private void comboBox5_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (this.comboBox3.SelectedItem.ToString() == "1" || this.comboBox3.SelectedItem.ToString() == "2")
+                {
+                    if (comboBox5.SelectedIndex == 0)//阴极加热器温度
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),CatholyteTank_Heater_ElementTemperature FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 1), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阴极加热器温度曲线", "温 度", 1, "ESU" + this.comboBox3.SelectedItem.ToString(), 2, "℃");
+
+                    }
+                    else if (comboBox5.SelectedIndex == 1)//液体温度
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),CatholyteTank_Heater_BathPrimaryTemperature FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 1), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阴极液温度曲线", "温 度", 1, "ESU" + this.comboBox3.SelectedItem.ToString(), 2, "℃");
+                    }
+                    else if (comboBox5.SelectedIndex == 2)//压力
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),CatholyteTank_Pressure FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 4), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阴极压力曲线", "压 力 PSI", 4, "ESU" + this.comboBox3.SelectedItem.ToString(), 4, "psi");
+
+                    }
+                    else if (comboBox5.SelectedIndex == 3)//  泵速
+                    {
+                        string sqltext = "SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),CatholyteTank_PumpSpeed FROM [dbo].[EsuValues] WHERE Esu_Id='" + this.comboBox3.SelectedItem.ToString() + "' AND  datediff(day, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp),'" + this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "')= 0 order by DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()),Timestamp) ASC";
+                        showDrawLine(Xy_data(sqltext, 1, 3), 16, this.dateTimePicker12.Value.ToString("yyyy-MM-dd") + "阴极泵速曲线", "泵 速 Hz", 3, "ESU" + this.comboBox3.SelectedItem.ToString(), 3, "Hz");
+
+                    }
+                }
+            }
+            catch (Exception exp)
+            {
+                MessageBox.Show("ESU?");
+            }
+            
+              
         }
     }
+
+
+    public class ActiveDirectoryAuthProvider : System.Data.SqlClient.SqlAuthenticationProvider
+    {
+        // ASSIGN YOUR VALUES TO THESE STATIC FIELDS !!
+        // static public string Az_SQLDB_svrName = "cnvizn.database.chinacloudapi.cn";
+        // static public string AzureAD_UserID = "weview@weview.partner.onmschina.cn";
+        // static public string Initial_DatabaseName = "cnvizn";
+        // Some scenarios do not need values for the following two fields:
+        // static public readonly string ClientApplicationID = "49c0cc77-01cf-455c-834b-5e7f2aeaaf9a";
+        // static public readonly Uri RedirectUri = new Uri("https://mywebserver.com/");
+        // Program._ more static values that you set!
+
+        private readonly string _clientId = "49c0cc77-01cf-455c-834b-5e7f2aeaaf9a";
+        private readonly Uri _redirectUri = new Uri("https://login.microsoftonline.com/common/oauth2/nativeclient");
+
+        public override async System.Threading.Tasks.Task<System.Data.SqlClient.SqlAuthenticationToken>
+            AcquireTokenAsync(System.Data.SqlClient.SqlAuthenticationParameters parameters)
+        {
+            Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext authContext =
+                new Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext(parameters.Authority);
+            authContext.CorrelationId = parameters.ConnectionId;
+            Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult result;
+
+            switch (parameters.AuthenticationMethod)
+            {
+                case System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive:
+                    Console.WriteLine("In method 'AcquireTokenAsync', case_0 == '.ActiveDirectoryInteractive'.");
+
+                    result = await authContext.AcquireTokenAsync(
+                        parameters.Resource,
+                        _clientId,
+                        _redirectUri,
+                        new Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters(Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior.Auto),
+                        new Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifier(
+                            parameters.UserId,
+                            Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifierType.RequiredDisplayableId));
+                    break;
+
+                case System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryIntegrated:
+                    Console.WriteLine("In method 'AcquireTokenAsync', case_1 == '.ActiveDirectoryIntegrated'.");
+
+                    result = await authContext.AcquireTokenAsync(
+                        parameters.Resource,
+                        _clientId,
+                        new Microsoft.IdentityModel.Clients.ActiveDirectory.UserCredential());
+                    break;
+
+                case System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryPassword:
+                    Console.WriteLine("In method 'AcquireTokenAsync', case_2 == '.ActiveDirectoryPassword'.");
+
+                    result = await authContext.AcquireTokenAsync(
+                        parameters.Resource,
+                        _clientId,
+                        new Microsoft.IdentityModel.Clients.ActiveDirectory.UserPasswordCredential(
+                            parameters.UserId,
+                            parameters.Password));
+                    break;
+
+                default: throw new InvalidOperationException();
+            }
+            return new System.Data.SqlClient.SqlAuthenticationToken(result.AccessToken, result.ExpiresOn);
+        }
+
+        public override bool IsSupported(System.Data.SqlClient.SqlAuthenticationMethod authenticationMethod)
+        {
+            return authenticationMethod == System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryIntegrated
+                || authenticationMethod == System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive
+                || authenticationMethod == System.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryPassword;
+        }
+    } // EOClass ActiveDirectoryAuthProvider.
+
 }
